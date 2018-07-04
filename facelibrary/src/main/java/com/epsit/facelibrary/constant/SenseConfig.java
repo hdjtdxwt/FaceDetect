@@ -14,6 +14,7 @@ public class SenseConfig {
     public final static String appid = "e3ea3489b9456b8e166332bfc56ae706";
     public final static String appsecret = "24ce66ca5e9a263812f5d4f3809c59eb76232ce7";
 
+    public final static int FREE_TIME = 10;//连续10s没有识别到人脸将进入空闲状态
     //人脸识别消息（消息发给子线程）
     public final static int MSG_GREETING_FACETRACKING = -100;
     //打招呼有识别到人脸的msgId，消息会回到主线程

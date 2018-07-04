@@ -8,6 +8,7 @@ import android.view.SurfaceView;
 
 import com.epsit.facelibrary.CameraAction;
 import com.epsit.facelibrary.callback.FaceDetectCallback;
+import com.epsit.facelibrary.constant.SenseConfig;
 
 public class CameraActivity extends AppCompatActivity implements FaceDetectCallback{
     String TAG = "CameraActivity";
@@ -18,7 +19,20 @@ public class CameraActivity extends AppCompatActivity implements FaceDetectCallb
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
         surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         CameraAction.init(this).setSurfaceView(surfaceView).setCallback(true, CameraAction.TrackType.GREETING, this).startTracker();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        lastHasFaceTime=0L;
+        CameraAction.init(this).removeCallback();
     }
 
     @Override
@@ -32,7 +46,9 @@ public class CameraActivity extends AppCompatActivity implements FaceDetectCallb
                 lastHasFaceTime = System.currentTimeMillis();
             } else {
                 //没有人脸更新时间，如果连续30s没有人脸，就进入空闲状态，跳转界面，播放视频和音频
-                if (System.currentTimeMillis() - lastHasFaceTime >= 15 * 1000) {
+                if (System.currentTimeMillis() - lastHasFaceTime >= SenseConfig.FREE_TIME * 1000) {
+                    CameraAction.init(this).removeCallback();
+                    //startActivity(new Intent(this, EmptyActivity.class));
                     startActivity(new Intent(this, VideoViewDemo.class));
                 }
                 Log.e(TAG, "---Activity显示获取的人脸数：count《=0 wu人脸");

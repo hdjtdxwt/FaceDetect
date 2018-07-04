@@ -34,7 +34,6 @@ import mobile.ReadFace.YMFaceTrack;
 public class CameraAction implements SurfaceHolder.Callback, Camera.PreviewCallback {
     private static final String TAG = "FaceDetectAction";
     private static FaceDetectCallback mFaceDetectCallback;
-    private static CameraManager mCameraManager;
     private static SurfaceHolder mHolder;
     private static CameraAction mFaceDetect;
 
@@ -49,7 +48,7 @@ public class CameraAction implements SurfaceHolder.Callback, Camera.PreviewCallb
     //子线程中的handler
     private Handler mThreadHandler;
     private Handler mainHandler;
-
+    private static boolean isPlaying;//是否正在显示播放的内容
     private static int iw, ih;//
     //是否要打招呼的相关操作
     private static boolean greetingFlag = true;
@@ -127,11 +126,11 @@ public class CameraAction implements SurfaceHolder.Callback, Camera.PreviewCallb
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
         try {
             release();
+            mHolder = holder;
             cameraId = getDefaultCameraId();
-            Log.e("surfaceCreated", "surfaceCreated-->cameraid=" + cameraId);
+            Log.e("surfaceChanged", "surfaceChanged-->cameraid=" + cameraId);
             camera = Camera.open(cameraId);
         } catch (Exception e) {
             e.printStackTrace();
@@ -164,6 +163,7 @@ public class CameraAction implements SurfaceHolder.Callback, Camera.PreviewCallb
             camera.setPreviewCallbackWithBuffer(this);
             camera.addCallbackBuffer(new byte[size.width*size.height*ImageFormat.getBitsPerPixel(ImageFormat.NV21) /8 ]);
             FaceDetectHelper.initFaceTracker(orientation, mContext);
+            Log.e(TAG,"重新preview了");
             camera.startPreview();
         }
     }
@@ -181,7 +181,7 @@ public class CameraAction implements SurfaceHolder.Callback, Camera.PreviewCallb
             msg.obj = data;
             msg.sendToTarget();
 
-            ImageUtils.saveYuv2Image(data, previewSize.width ,previewSize.height);//保存需要旋转，但是给检测的时候不需要
+            //ImageUtils.saveYuv2Image(data, previewSize.width ,previewSize.height);//保存需要旋转，但是给检测的时候不需要
 
             Log.e(TAG,"给子线程做打招呼处理");
         }
@@ -196,6 +196,9 @@ public class CameraAction implements SurfaceHolder.Callback, Camera.PreviewCallb
     public void surfaceDestroyed(SurfaceHolder holder) {
         Log.e(TAG, "surfaceDestroyed-->release-->");
         release();
+        /*if(mThreadHandler!=null){
+            mThreadHandler.getLooper().quit();
+        }*/
     }
 
     private void initCamera() {
@@ -214,6 +217,9 @@ public class CameraAction implements SurfaceHolder.Callback, Camera.PreviewCallb
         mainHandler = new Handler(Looper.getMainLooper()){
             @Override
             public void handleMessage(Message msg) {
+                if(greetingFaceListener!=null){
+                    Log.e(TAG,"greetingFaceListener!=null");
+                }
                 switch (msg.what) {
                     case SenseConfig.MSG_GREETING_HASFACE:
                         greeting_working = false;
@@ -347,12 +353,12 @@ public class CameraAction implements SurfaceHolder.Callback, Camera.PreviewCallb
     public synchronized void removeCallback() {
         if (mFaceDetectCallback != null) {
             mFaceDetectCallback = null;
-            //mFaceDetector.setFaceListener((FaceDetectListener)null);
-            Log.e(TAG, "[移除人脸识别回调]");
-            release();
-            mHolder = null;
         }
-
+        //mFaceDetector.setFaceListener((FaceDetectListener)null);
+        Log.e(TAG, "[移除人脸识别回调]");
+        release();
+        greetingFaceListener = null;
+        mHolder = null;
     }
 
     public static void release() {
@@ -363,10 +369,12 @@ public class CameraAction implements SurfaceHolder.Callback, Camera.PreviewCallb
                 camera.setPreviewCallback((Camera.PreviewCallback) null);
                 camera.release();
                 camera = null;
+
                 Log.e(TAG, "[释放摄像头资源成功]");
 
                 FaceDetectHelper.release();
             }
+            mFaceDetectCallback = null;
         } catch (Exception var1) {
         }
 

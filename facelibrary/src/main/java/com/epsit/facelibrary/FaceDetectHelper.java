@@ -22,10 +22,14 @@ public class FaceDetectHelper {
     }
     private static YMFaceTrack faceTrack;
     private static Context mContext;
+
+    public static void initFaceTracker(Context context){
+        initFaceTracker(90, context);
+    }
     /**
      * 初始化阅面的人脸识别器
      */
-    public static void initFaceTracker(int orientation,Context context) {
+    public static void initFaceTracker(int orientation, Context context) {
         if(faceTrack==null){
             faceTrack = new YMFaceTrack();
         }
@@ -48,7 +52,6 @@ public class FaceDetectHelper {
                 Toast.makeText(mContext, "初始化检测器失败！请打开wifi，同时检查camera权限是否有！", Toast.LENGTH_LONG).show();
             }
         }
-
     }
     public static void greetingCheck(byte[] bytes,int iw,int ih, GreetingFaceCallback callback) {
         final List<YMFace> faces = faceTrack.trackMulti(bytes, iw, ih);
@@ -65,6 +68,7 @@ public class FaceDetectHelper {
             }
         }
     }
+    //检测是否有人脸，根据camera获取的图像数据
     public static List<YMFace> trackMulti(byte[]data, int iw, int ih){
         if(faceTrack!=null){
             return faceTrack.trackMulti(data,iw,ih);
