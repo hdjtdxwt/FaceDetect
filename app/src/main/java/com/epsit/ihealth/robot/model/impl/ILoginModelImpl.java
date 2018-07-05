@@ -2,12 +2,15 @@ package com.epsit.ihealth.robot.model.impl;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.text.TextUtils;
 import android.util.Log;
 
 
 import com.epsit.ihealth.robot.base.RobotLocalOperator;
 import com.epsit.ihealth.robot.entity.CmsData;
 import com.epsit.ihealth.robot.model.ILoginModel;
+import com.epsit.ihealth.robot.requestbean.BaseRequest;
+import com.epsit.ihealth.robot.requestbean.FaceImgLibInitResponse;
 import com.epsit.ihealth.robot.requestbean.LoginRequest;
 import com.epsit.ihealth.robot.requestbean.LoginResponse;
 import com.epsit.ihealth.robot.retrofit.ApiManager;
@@ -99,6 +102,46 @@ public class ILoginModelImpl implements ILoginModel {
                 });
 
     }
+
+    @Override
+    public void faceInfoByCustomize() {
+        String token = RobotLocalOperator.getInstance().getAccessToken();
+        String robotId = RobotLocalOperator.getInstance().getRobotId();
+        BaseRequest request = new BaseRequest();
+        request.setRobotId(robotId);
+        request.setToken(token);
+        ApiManager.getInstance()
+                .getApiService()
+                .faceInfoByCustomize(request)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<FaceImgLibInitResponse>(){
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onNext(FaceImgLibInitResponse faceImgLibInitResponse) {
+                        if(faceImgLibInitResponse!=null && !TextUtils.isEmpty(faceImgLibInitResponse.getCode()) && "200".equals(faceImgLibInitResponse.getCode())){
+                            List<FaceImgLibInitResponse.DataBean> list =  faceImgLibInitResponse.getData();
+                            if(list!=null && list.size()>0){
+                                for(FaceImgLibInitResponse.DataBean bean:list){
+
+                                }
+                            }
+                        }
+                    }
+                }) ;
+
+
+    }
+
     private void saveCmsData(List<CmsData> cmsDatas) {
         if (cmsDatas != null) {
             RobotLocalOperator.getInstance().setCms(cmsDatas);

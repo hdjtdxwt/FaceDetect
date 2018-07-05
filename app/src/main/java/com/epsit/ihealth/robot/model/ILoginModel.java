@@ -15,6 +15,8 @@ public interface ILoginModel {
     //登录，登录的回调接口
     void login(String robotId, String password, ILoginModel.OnLoginListener listener);
 
+    //通过机器人编号获取当前机构下 工作人员及取号人员人脸信息 (既有打卡人的人脸，也有取号人的人脸)
+    void faceInfoByCustomize();
 
     //内部地图列表获取的方法
     /*Observable<MaplistResponse>getMaplist();

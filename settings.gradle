@@ -1,1 +1,1 @@
-include ':app', ':facelibrary',':vitamio'
+include ':app', ':facelibrary',':vitamio',':library'

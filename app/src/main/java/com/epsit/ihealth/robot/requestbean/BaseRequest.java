@@ -4,8 +4,8 @@ package com.epsit.ihealth.robot.requestbean;
  * 除了登录，后面的请求基本都带有token和robotId
  */
 public class BaseRequest {
-    private String token;
-    private String robotId;
+    protected String token;
+    protected String robotId;
 
     public String getRobotId() {
         return robotId;

@@ -19,6 +19,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.epsit.ihealth.robot.R;
 import com.epsit.ihealth.robot.base.BaseActivity;
@@ -27,6 +28,8 @@ import com.epsit.ihealth.robot.presenter.impl.LoginPresenter;
 import com.epsit.ihealth.robot.view.ILoginView;
 
 import java.util.List;
+
+import dou.utils.ToastUtil;
 
 /**
  * A login screen that offers login via email/password.
@@ -135,12 +138,13 @@ public class LoginActivity extends BaseActivity<ILoginView, LoginPresenter> impl
             basePresenter.login(email,password, new ILoginModel.OnLoginListener() {
                 @Override
                 public void onSuccess() {
+                    Toast.makeText(getApplicationContext(),"登录成功，接下来初始化...",Toast.LENGTH_SHORT).show();
                     basePresenter.faceInfoByCustomize();
                 }
 
                 @Override
                 public void onFail() {
-
+                    Toast.makeText(getApplicationContext(),"登录失败",Toast.LENGTH_SHORT).show();
                 }
             });
             /*mAuthTask = new UserLoginTask(email, password);

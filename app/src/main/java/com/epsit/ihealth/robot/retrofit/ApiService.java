@@ -1,5 +1,7 @@
 package com.epsit.ihealth.robot.retrofit;
 
+import com.epsit.ihealth.robot.requestbean.BaseRequest;
+import com.epsit.ihealth.robot.requestbean.FaceImgLibInitResponse;
 import com.epsit.ihealth.robot.requestbean.LoginRequest;
 import com.epsit.ihealth.robot.requestbean.LoginResponse;
 import com.epsit.ihealth.robot.requestbean.VoiceRequest;
@@ -22,7 +24,8 @@ public interface ApiService {
     @POST("api/robot/token")
     Observable<LoginResponse> login(@Body LoginRequest requestBody);
 
-    void faceInfoByCustomize();
+    @POST("api/customize/faceInfoByCustomize")
+    Observable<FaceImgLibInitResponse> faceInfoByCustomize(@Body BaseRequest request);
 
     //考勤打卡  /api/customize/signin，原来是有身份证和人脸打卡的，现在只有打卡了
     void workerSign();
