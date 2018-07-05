@@ -45,11 +45,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/prompt_email"
-                    android:text="robot002_TestUser"
+                    android:text="rmyytjzx000"
                     android:inputType="text"
                     android:maxLines="1"
                     android:singleLine="true" />
-
+                <!--android:text="robot002_TestUser"-->
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout

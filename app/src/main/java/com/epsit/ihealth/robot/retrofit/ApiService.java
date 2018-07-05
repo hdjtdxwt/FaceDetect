@@ -4,6 +4,8 @@ import com.epsit.ihealth.robot.requestbean.BaseRequest;
 import com.epsit.ihealth.robot.requestbean.FaceImgLibInitResponse;
 import com.epsit.ihealth.robot.requestbean.LoginRequest;
 import com.epsit.ihealth.robot.requestbean.LoginResponse;
+import com.epsit.ihealth.robot.requestbean.MapLoadRequest;
+import com.epsit.ihealth.robot.requestbean.MapLoadResponse;
 import com.epsit.ihealth.robot.requestbean.VoiceRequest;
 import com.epsit.ihealth.robot.requestbean.VoiceResponse;
 
@@ -24,8 +26,14 @@ public interface ApiService {
     @POST("api/robot/token")
     Observable<LoginResponse> login(@Body LoginRequest requestBody);
 
-    @POST("api/customize/faceInfoByCustomize")
+    //@POST("api/customize/faceInfoByCustomize")
+    @POST("api/face/getFaceInfo")
     Observable<FaceImgLibInitResponse> faceInfoByCustomize(@Body BaseRequest request);
+
+
+    //地图图片请求
+    @POST("api/img/download")
+    Observable<MapLoadResponse> getMapLoadResponse(@Body MapLoadRequest req);
 
     //考勤打卡  /api/customize/signin，原来是有身份证和人脸打卡的，现在只有打卡了
     void workerSign();

@@ -6,12 +6,13 @@ import com.epsit.ihealth.robot.retrofit.ApiManager;
 import com.tencent.bugly.crashreport.CrashReport;
 
 import org.litepal.LitePal;
+import org.litepal.LitePalApplication;
 
 /**
  * Created by Administrator on 2018/7/4.
  */
 
-public class RobotApplication extends Application {
+public class RobotApplication extends LitePalApplication {
     private static RobotApplication instance;
     private String robotId;
     private String token;

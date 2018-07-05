@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.epsit.ihealth.robot.base.RobotApplication;
 import com.epsit.ihealth.robot.base.RobotLocalOperator;
+import com.epsit.ihealth.robot.dbentity.FaceImgDataBean;
 import com.epsit.ihealth.robot.entity.CmsData;
 import com.epsit.ihealth.robot.model.ILoginModel;
 import com.epsit.ihealth.robot.requestbean.BaseRequest;
@@ -102,7 +103,7 @@ public class ILoginModelImpl implements ILoginModel {
 
     @Override
     public void faceInfoByCustomize(final getCountListener listener) {
-        Log.e(TAG, "执行下图片的操作");
+        Log.e(TAG, "执行下图片的操作faceInfoByCustomize");
         String token = RobotApplication.getInstance().getToken();
         String robotId = RobotApplication.getInstance().getRobotId();
         BaseRequest request = new BaseRequest();
@@ -130,18 +131,33 @@ public class ILoginModelImpl implements ILoginModel {
                     public void onNext(FaceImgLibInitResponse faceImgLibInitResponse) {
                         Log.e(TAG, "图片下载onNext->"+new Gson().toJson(faceImgLibInitResponse));
                         if (faceImgLibInitResponse != null && !TextUtils.isEmpty(faceImgLibInitResponse.getCode()) && "200".equals(faceImgLibInitResponse.getCode())) {
-                            List<FaceImgLibInitResponse.DataBean> list = faceImgLibInitResponse.getData();
+                            List<FaceImgDataBean> list = faceImgLibInitResponse.getData();
                             if (list != null && list.size() > 0) {
                                 Log.e(TAG, "list有数据->"+list.size());
 
                                 if (listener != null) {
                                     listener.getCount(list.size());
                                 }
+                                //发布在外网的，返回的这个数据集合的list<人物bean list<HeadImage{url，version}>>嵌套比较多，不好直接保存，所以save会报错
+                                /*for(FaceImgDataBean bean: list ){
+                                    Log.e(TAG,"bean: "+new Gson().toJson(bean));
+                                    Log.e(TAG,"url="+(bean.getHeadImage().size() >0?bean.getHeadImage().get(0).getHeadImage():"空"));
+                                    FaceImgDataBean dbBean = DataSupport.where("name = ?", bean.getName()).findFirst(FaceImgDataBean.class);
+                                    if(dbBean==null){
+                                        Log.e(TAG,"cursor没有这一条数据");
+                                        Intent intent = new Intent(ACTION_DOWNLOAD);
+                                        intent.putExtra("downloadUrl",bean.getHeadImage().get(0).getHeadImage());
+                                        bean.save();//保存到数据库，下载失败会删除
+                                        RobotApplication.getInstance().startService(intent);
+                                    }else{
+                                        Log.e(TAG,"数据库有数据");
+                                    }
+                                }*/
 
-                                for(FaceImgLibInitResponse.DataBean bean: list ){
+                                /*for(FaceImgDataBean bean: list ){
                                     Log.e(TAG,"bean: "+new Gson().toJson(bean));
                                     Log.e(TAG,"url="+bean.getFaceImg().trim());
-                                    FaceImgLibInitResponse.DataBean dbBean = DataSupport.where("idImg = ?", bean.getFaceImg()).findFirst(FaceImgLibInitResponse.DataBean.class);
+                                    FaceImgDataBean dbBean = DataSupport.where("idImg = ?", bean.getFaceImg()).findFirst(FaceImgDataBean.class);
                                     if(dbBean==null){
                                         Log.e(TAG,"cursor没有这一条数据");
                                         Intent intent = new Intent(ACTION_DOWNLOAD);
@@ -151,7 +167,7 @@ public class ILoginModelImpl implements ILoginModel {
                                     }else{
                                         Log.e(TAG,"数据库有数据");
                                     }
-                                }
+                                }*/
                             } else {
                                 if (listener != null) {
                                     listener.getCount(0);
