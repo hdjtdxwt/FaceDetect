@@ -98,7 +98,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Toast.makeText(this,"缺少权限！",Toast.LENGTH_SHORT).show();
 
             }else{ //有权限
-                startActivity(new Intent(this, CameraActivity.class));
+                //startActivity(new Intent(this, CameraActivity.class));//
+                startActivity(new Intent(this, VideoViewDemo.class));
             }
         }else{
             //startActivity(new Intent(this, CameraActivity.class));
