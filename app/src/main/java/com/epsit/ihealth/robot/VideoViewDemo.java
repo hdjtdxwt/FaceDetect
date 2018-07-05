@@ -69,6 +69,7 @@ public class VideoViewDemo extends Activity implements FaceDetectCallback {
         mVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
+                //play();
             }
         });
     }
