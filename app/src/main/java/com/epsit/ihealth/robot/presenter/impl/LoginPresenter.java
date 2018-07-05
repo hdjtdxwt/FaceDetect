@@ -25,8 +25,8 @@ public class LoginPresenter extends BasePresenter<ILoginView> implements ILoginP
     }
 
     @Override
-    public void faceInfoByCustomize() {
-        loginModel.faceInfoByCustomize();
+    public void faceInfoByCustomize(ILoginModel.getCountListener listener) {
+        loginModel.faceInfoByCustomize(listener);
     }
 
     @Override

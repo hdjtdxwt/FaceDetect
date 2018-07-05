@@ -6,8 +6,11 @@ package com.epsit.ihealth.robot.model;
 
 public interface ILoginModel {
     public interface OnLoginListener{
-        void onSuccess();
+        void onSuccess();//
         void onFail();
+    }
+    interface getCountListener{
+        void getCount(int count);
     }
     interface OnProgressListener{
 
@@ -16,7 +19,7 @@ public interface ILoginModel {
     void login(String robotId, String password, ILoginModel.OnLoginListener listener);
 
     //通过机器人编号获取当前机构下 工作人员及取号人员人脸信息 (既有打卡人的人脸，也有取号人的人脸)
-    void faceInfoByCustomize();
+    void faceInfoByCustomize(getCountListener listener);
 
     //内部地图列表获取的方法
     /*Observable<MaplistResponse>getMaplist();

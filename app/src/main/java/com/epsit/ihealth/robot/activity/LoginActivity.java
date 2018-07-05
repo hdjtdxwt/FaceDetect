@@ -10,6 +10,7 @@ import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -18,14 +19,21 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.epsit.ihealth.robot.R;
 import com.epsit.ihealth.robot.base.BaseActivity;
+import com.epsit.ihealth.robot.ebentity.EbDownloadFileInfo;
 import com.epsit.ihealth.robot.model.ILoginModel;
 import com.epsit.ihealth.robot.presenter.impl.LoginPresenter;
 import com.epsit.ihealth.robot.view.ILoginView;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+import org.litepal.crud.DataSupport;
 
 import java.util.List;
 
@@ -34,8 +42,8 @@ import dou.utils.ToastUtil;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends BaseActivity<ILoginView, LoginPresenter> implements ILoginView    {
-
+public class LoginActivity extends BaseActivity<ILoginView, LoginPresenter> implements ILoginView ,ILoginModel.OnLoginListener,ILoginModel.getCountListener   {
+    String TAG = "LoginActivity";
     private static final int REQUEST_READ_CONTACTS = 0;
 
     private static final String[] DUMMY_CREDENTIALS = new String[]{
@@ -44,12 +52,15 @@ public class LoginActivity extends BaseActivity<ILoginView, LoginPresenter> impl
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
     private View mProgressView;
+    ProgressBar horizontalPb;
     private View mLoginFormView;
-
+    private int totalDownloadFileCount;
+    private int totalDownloadFinished;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        horizontalPb = (ProgressBar) findViewById(R.id.download_progress);
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
 
@@ -75,6 +86,7 @@ public class LoginActivity extends BaseActivity<ILoginView, LoginPresenter> impl
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+        EventBus.getDefault().register(this);
     }
 
     private void populateAutoComplete() {
@@ -135,23 +147,39 @@ public class LoginActivity extends BaseActivity<ILoginView, LoginPresenter> impl
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            basePresenter.login(email,password, new ILoginModel.OnLoginListener() {
-                @Override
-                public void onSuccess() {
-                    Toast.makeText(getApplicationContext(),"登录成功，接下来初始化...",Toast.LENGTH_SHORT).show();
-                    basePresenter.faceInfoByCustomize();
-                }
-
-                @Override
-                public void onFail() {
-                    Toast.makeText(getApplicationContext(),"登录失败",Toast.LENGTH_SHORT).show();
-                }
-            });
+            basePresenter.login(email,password, this);
             /*mAuthTask = new UserLoginTask(email, password);
             mAuthTask.execute((Void) null);*/
         }
     }
+    @Override
+    public void onSuccess() {
+        Toast.makeText(getApplicationContext(),"登录成功，接下来初始化...",Toast.LENGTH_SHORT).show();
+        basePresenter.faceInfoByCustomize(this);
+    }
 
+    @Override
+    public void onFail() {
+        Toast.makeText(getApplicationContext(),"登录失败",Toast.LENGTH_SHORT).show();
+    }
+    @Override
+    public void getCount(int count) {
+        totalDownloadFileCount = count;
+        horizontalPb.setMax(totalDownloadFileCount);
+    }
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onDownloadProgresschange(EbDownloadFileInfo info){
+        totalDownloadFinished ++;
+        horizontalPb.setProgress(totalDownloadFinished);
+        if(!info.isSuccess()){
+            /*DeleteBuilder<SprojectMember, String> deleteBuilder = projectMemberDao.deleteBuilder();
+            deleteBuilder.where().eq("projectId", Global.user.getUserId());
+            deleteBuilder.delete();*/
+            //DataSupport.delete() //删除这个没下载成功的
+            Log.e(TAG, "---又失败了一个："+info.getDownloadUrl());
+        }
+
+    }
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
         return email.contains("@");
@@ -221,6 +249,13 @@ public class LoginActivity extends BaseActivity<ILoginView, LoginPresenter> impl
     public void hideDialog() {
 
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
 
 
     private interface ProfileQuery {

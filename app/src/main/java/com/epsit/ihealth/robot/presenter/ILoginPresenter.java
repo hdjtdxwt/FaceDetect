@@ -10,7 +10,7 @@ public interface ILoginPresenter {
     void login(String robotId, String password, ILoginModel.OnLoginListener listener);
 
     //通过机器人编号获取当前机构下 工作人员及取号人员人脸信息 (既有打卡人的人脸，也有取号人的人脸)
-    void faceInfoByCustomize();
+    void faceInfoByCustomize(ILoginModel.getCountListener listener);
 
     //考勤打卡  /api/customize/signin，原来是有身份证和人脸打卡的，现在只有打卡了
     void workerSign();

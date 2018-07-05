@@ -16,6 +16,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 
 /** 文件操作的类，主要包含了一个文件复制的方法
  * Created by Administrator on 2017/6/3 0003.
@@ -27,9 +28,46 @@ public class FileUtils {
 //    public static String logFileName1 = "2017-8-24.txt"; //文件名称 log
     public static String errorString = "uncaughtException.log";
 
+    public static final String faceimage = "/epsit/faceimage/";
     public static final String path = "/epsit/mapimg/";
     public static final String taskPath="/epsit/task/";
     public static final String logPath="/epsit/log/";
+
+    public static final int BYTE = 1024;
+
+    /**
+     * 格式化单位
+     *
+     * @param size
+     * @return
+     */
+    public static String getFormatSize(double size) {
+        double kiloByte = size / BYTE;
+        if (kiloByte < 1) {
+            return size + "B";
+        }
+
+        double megaByte = kiloByte / BYTE;
+        if (megaByte < 1) {
+            BigDecimal result1 = new BigDecimal(Double.toString(kiloByte));
+            return result1.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString() + "KB";
+        }
+
+        double gigaByte = megaByte / BYTE;
+        if (gigaByte < 1) {
+            BigDecimal result2 = new BigDecimal(Double.toString(megaByte));
+            return result2.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString() + "MB";
+        }
+
+        double teraBytes = gigaByte / BYTE;
+        if (teraBytes < 1) {
+            BigDecimal result3 = new BigDecimal(Double.toString(gigaByte));
+            return result3.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString() + "GB";
+        }
+        BigDecimal result4 = new BigDecimal(teraBytes);
+        return result4.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString() + "TB";
+    }
+
     /**
      * 将 sourcePath 文件复制备份成 destPath （注意，这么两个path都是文件的全路径，是文件而不是文件夹，这里没考虑复制文件夹的情况）
      * @param srcFileName 原始文件的全局路径

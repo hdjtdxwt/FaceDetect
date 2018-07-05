@@ -12,7 +12,10 @@ import org.litepal.LitePal;
  */
 
 public class RobotApplication extends Application {
-    static RobotApplication instance;
+    private static RobotApplication instance;
+    private String robotId;
+    private String token;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -25,5 +28,21 @@ public class RobotApplication extends Application {
     }
     public static RobotApplication getInstance(){
         return instance;
+    }
+
+    public String getRobotId() {
+        return robotId;
+    }
+
+    public void setRobotId(String robotId) {
+        this.robotId = robotId;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }
