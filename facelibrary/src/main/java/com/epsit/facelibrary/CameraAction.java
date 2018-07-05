@@ -3,7 +3,6 @@ package com.epsit.facelibrary;
 import android.app.Activity;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
-import android.hardware.camera2.CameraManager;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -15,7 +14,6 @@ import android.view.SurfaceView;
 import android.widget.Toast;
 
 import com.epsit.facelibrary.callback.FaceDetectCallback;
-import com.epsit.facelibrary.callback.GreetingFaceListener;
 import com.epsit.facelibrary.constant.SenseConfig;
 import com.epsit.facelibrary.utils.ImageUtils;
 
@@ -25,7 +23,6 @@ import java.util.Date;
 import java.util.List;
 
 import mobile.ReadFace.YMFace;
-import mobile.ReadFace.YMFaceTrack;
 
 /**
  * Created by Administrator on 2018/7/3/003.
@@ -33,37 +30,45 @@ import mobile.ReadFace.YMFaceTrack;
 
 public class CameraAction implements SurfaceHolder.Callback, Camera.PreviewCallback {
     private static final String TAG = "FaceDetectAction";
-    private static FaceDetectCallback mFaceDetectCallback;
-    private static SurfaceHolder mHolder;
-    private static CameraAction mFaceDetect;
+    private SurfaceHolder mHolder;
+    private CameraAction mFaceDetect;
 
-    //针对人脸识别打招呼用的回调
-    private static FaceDetectCallback greetingFaceListener;
 
-    private static long lastSearchTime = 0L;
-    private static Activity mContext;
-    private static Camera camera;
-    private static SurfaceView mSurfaceView;
+
+    private long lastSearchTime = 0L;
+    private Activity mContext;
+    private Camera camera;
+    private SurfaceView mSurfaceView;
     private HandlerThread mHandlerThread;
     //子线程中的handler
     private Handler mThreadHandler;
     private Handler mainHandler;
-    private static boolean isPlaying;//是否正在显示播放的内容
-    private static int iw, ih;//
+    private boolean isPlaying;//是否正在显示播放的内容
+    private int iw, ih;//
+
+    //针对人脸识别打招呼用的回调
+    private FaceDetectCallback greetingFaceListener;
+    private FaceDetectCallback freeFaceTrackListener;
+    //是否要空闲识别人脸
+    private boolean freeFaceTrackFlag = true;
+    //当前是否在 空闲识别人脸
+    private boolean freeFaceTrack_working = false;
+
     //是否要打招呼的相关操作
-    private static boolean greetingFlag = true;
+    private boolean greetingFlag = true;
     //当前是否在进行人脸的操作
-    private static boolean greeting_working = false;
+    private boolean greeting_working = false;
     //是否要做上班打卡的操作
-    private static boolean signWorkFlag = false;
+    private boolean signWorkFlag = false;
     //排队取号的操作
-    private static boolean takeNumberFlag = false;
+    private boolean takeNumberFlag = false;
     int cameraId;
     private Camera.Size size;
     public static int orientation = 0;//屏幕方向最终会导致
+
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-
+        Log.e(TAG,"surfaceCreated-->");
     }
 
 
@@ -126,8 +131,8 @@ public class CameraAction implements SurfaceHolder.Callback, Camera.PreviewCallb
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        Log.e(TAG,"surfaceChanged-->");
         try {
-            release();
             mHolder = holder;
             cameraId = getDefaultCameraId();
             Log.e("surfaceChanged", "surfaceChanged-->cameraid=" + cameraId);
@@ -191,14 +196,34 @@ public class CameraAction implements SurfaceHolder.Callback, Camera.PreviewCallb
         if (takeNumberFlag) {//取号识别人脸需要判断
 
         }
+        if(freeFaceTrackFlag && !freeFaceTrack_working){
+            freeFaceTrack_working = true;//当前在工作
+            Message msg = mThreadHandler.obtainMessage(SenseConfig.MSG_FREE_FACETRACKING);
+            msg.arg1 = previewSize.width;
+            msg.arg2 = previewSize.height;
+            msg.obj = data;
+            msg.sendToTarget();
+        }
     }
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         Log.e(TAG, "surfaceDestroyed-->release-->");
         release();
-        /*if(mThreadHandler!=null){
-            mThreadHandler.getLooper().quit();
-        }*/
+        mFaceDetect=null;
+        if(mHandlerThread!=null){
+            mHandlerThread.quit();
+            mHandlerThread = null;
+        }
+        if(mSurfaceView!=null){
+            mSurfaceView=null;
+        }
+        if(mHolder!=null){
+            mHolder=null;
+        }
+        if(camera!=null){
+            camera.release();
+            camera = null;
+        }
     }
 
     private void initCamera() {
@@ -208,6 +233,7 @@ public class CameraAction implements SurfaceHolder.Callback, Camera.PreviewCallb
     }
 
     public static enum TrackType {
+        FREE_FACETRACKER,
         GREETING,
         SINGWORK,
         TAKENUMBER
@@ -233,6 +259,18 @@ public class CameraAction implements SurfaceHolder.Callback, Camera.PreviewCallb
                             greetingFaceListener.getFaceCount(msg.arg1);
                         }
                         break;
+                    case SenseConfig.MSG_FREE_FACETRACKING_HASFACE:
+                        freeFaceTrack_working = false;
+                        if(freeFaceTrackListener!=null){
+                            freeFaceTrackListener.getFaceCount(msg.arg1);
+                        }
+                        break;
+                    case SenseConfig.MSG_FREE_FACETRACKING_NOFACE:
+                        if(freeFaceTrackListener!=null){
+                            freeFaceTrackListener.getFaceCount(msg.arg1);
+                        }
+                        freeFaceTrack_working = false;
+                        break;
                 }
             }
         };
@@ -243,35 +281,63 @@ public class CameraAction implements SurfaceHolder.Callback, Camera.PreviewCallb
             public void handleMessage(Message msg) {
                 long time = System.currentTimeMillis();
                 switch (msg.what){
-                    case SenseConfig.MSG_GREETING_FACETRACKING:
-                        Log.e(TAG," 子线程收到消息，准备处理");
-                        byte[]data = (byte[]) msg.obj;
-                        if(data!=null){
-                            Log.e(TAG,"子线程的图片数据 不是null");
+                    case SenseConfig.MSG_GREETING_FACETRACKING: {
+                        Log.e(TAG, " 子线程收到消息，准备处理");
+                        byte[] data = (byte[]) msg.obj;
+                        if (data != null) {
+                            Log.e(TAG, "子线程的图片数据 不是null");
                             int iw = msg.arg1;
                             int ih = msg.arg2;
-                            Log.e(TAG,"iw="+iw+"  ih="+ih);
+                            Log.e(TAG, "iw=" + iw + "  ih=" + ih);
                             final List<YMFace> faces = FaceDetectHelper.trackMulti(data, iw, ih);
                             if (faces != null && faces.size() > 0) {
-                                Log.e(TAG,"faces != null && faces.size() > 0  有人脸");
+                                Log.e(TAG, "faces != null && faces.size() > 0  有人脸");
                                 Message message = mainHandler.obtainMessage(SenseConfig.MSG_GREETING_HASFACE);
                                 message.arg1 = faces.size();
                                 message.sendToTarget();
-                            }else{
+                            } else {
                                 Message message = mainHandler.obtainMessage(SenseConfig.MSG_GREETING_NOFACE);
                                 message.arg1 = 0;
                                 message.sendToTarget();
-                                Log.e(TAG,"没有人脸！！");
+                                Log.e(TAG, "没有人脸！！");
                             }
                             long thisTime = System.currentTimeMillis();
-                            Log.e(TAG,"一张图片检测是否有人脸耗时："+(thisTime-time));
-                            time  = thisTime;
-                        }else{
-                            Log.e(TAG,"子线程的图片数据是null");
+                            Log.e(TAG, "一张图片检测是否有人脸耗时：" + (thisTime - time));
+                            time = thisTime;
+                        } else {
+                            Log.e(TAG, "子线程的图片数据是null");
                             mainHandler.obtainMessage(SenseConfig.MSG_GREETING_NOFACE);
                         }
 
-                    break;
+                    } break;
+                    case SenseConfig.MSG_FREE_FACETRACKING: {
+                        Log.e(TAG, " 子线程收到消息，准备处理");
+                        byte[] data = (byte[]) msg.obj;
+                        if (data != null) {
+                            Log.e(TAG, "子线程的图片数据 不是null");
+                            int iw = msg.arg1;
+                            int ih = msg.arg2;
+                            Log.e(TAG, "iw=" + iw + "  ih=" + ih);
+                            final List<YMFace> faces = FaceDetectHelper.trackMulti(data, iw, ih);
+                            if (faces != null && faces.size() > 0) {
+                                Log.e(TAG, "faces != null && faces.size() > 0  有人脸");
+                                Message message = mainHandler.obtainMessage(SenseConfig.MSG_FREE_FACETRACKING_HASFACE);
+                                message.arg1 = faces.size();
+                                message.sendToTarget();
+                            } else {
+                                Message message = mainHandler.obtainMessage(SenseConfig.MSG_FREE_FACETRACKING_NOFACE);
+                                message.arg1 = 0;
+                                message.sendToTarget();
+                                Log.e(TAG, "没有人脸！！");
+                            }
+                            long thisTime = System.currentTimeMillis();
+                            Log.e(TAG, "一张图片检测是否有人脸耗时：" + (thisTime - time));
+                            time = thisTime;
+                        } else {
+                            Log.e(TAG, "子线程的图片数据是null");
+                            mainHandler.obtainMessage(SenseConfig.MSG_GREETING_NOFACE);
+                        }
+                    } break;
                 }
             }
         };
@@ -302,66 +368,81 @@ public class CameraAction implements SurfaceHolder.Callback, Camera.PreviewCallb
         }
         return defaultId;
     }
+    public static class Builder{
+        Activity context;
+        SurfaceView surfaceView;
+        boolean greetingFlag;//工作状态人脸打招呼
+        boolean freeFaceTrackFlag;//空闲状态人脸识别
+        private FaceDetectCallback greetingFaceListener;
+        private FaceDetectCallback freeFaceTrackListener;
+        public Builder(){
 
-    public static CameraAction init(Activity context) {
-        if (mFaceDetect == null) {
-            Log.e(TAG, "[初始化人脸识别功能类]");
-            mFaceDetect = new CameraAction();
-            mContext = context;
         }
-        return mFaceDetect;
+        public Builder init(Activity context){
+            this.context = context;
+            return this;
+        }
+        public Builder setSurfaceView(SurfaceView surfaceView){
+            this.surfaceView = surfaceView;
+            return this;
+        }
+        public Builder setCallback(boolean flag, TrackType type, FaceDetectCallback faceDetectCallback) {
+            Log.e(TAG, "CameraAction setCallback");
+            switch (type) {
+                case GREETING:
+                    Log.e(TAG, "工作状态  人脸打招呼");
+                    greetingFlag = flag;
+                    greetingFaceListener = faceDetectCallback;
+                    break;
+                case SINGWORK:
+
+                    break;
+                case TAKENUMBER:
+
+                    break;
+                case FREE_FACETRACKER:
+                    Log.e(TAG, "空闲状态  人脸识别，有人就切换到工作状态");
+                    freeFaceTrackFlag = flag;
+                    freeFaceTrackListener = faceDetectCallback;
+                    break;
+            }
+            return this;
+        }
+        public CameraAction create(){
+            CameraAction cameraAction = new CameraAction();
+            cameraAction.mContext = context;
+            cameraAction.mSurfaceView = surfaceView;
+
+            cameraAction.greetingFlag = greetingFlag;//工作状态人脸打招呼
+            cameraAction.freeFaceTrackFlag = freeFaceTrackFlag;//空闲状态人脸识别
+            cameraAction.greetingFaceListener = greetingFaceListener;
+            cameraAction.freeFaceTrackListener = freeFaceTrackListener;
+            cameraAction.mHolder = surfaceView.getHolder();
+            return cameraAction;
+        }
     }
 
-    public CameraAction setSurfaceView(SurfaceView surfaceView) {
-        if (surfaceView != null) {
-            mSurfaceView = surfaceView;
-            mHolder = surfaceView.getHolder();
-        }
-        return mFaceDetect;
-    }
-
-    public synchronized CameraAction setCallback(boolean flag, TrackType type, FaceDetectCallback faceDetectCallback) {
-        switch (type) {
-            case GREETING:
-                greetingFlag = flag;
-                greetingFaceListener = faceDetectCallback;
-                break;
-            case SINGWORK:
-                signWorkFlag = flag;
-                break;
-            case TAKENUMBER:
-                takeNumberFlag = flag;
-                break;
-        }
-        if (faceDetectCallback != null) {
-            Log.e(TAG, "[添加人脸识别回调]");
-            release();
-            mFaceDetectCallback = faceDetectCallback;//这个先作为打招呼的回调
-            lastSearchTime = 0L;
-        }
-
-        return mFaceDetect;
-    }
 
     public void startTracker() {
+        Log.e(TAG, " startTracker() ");
         if (mHolder != null) {
+            Log.e(TAG, " mHolder != null ");
             mHolder.addCallback(this);
         }
     }
 
 
     public synchronized void removeCallback() {
-        if (mFaceDetectCallback != null) {
-            mFaceDetectCallback = null;
-        }
-        //mFaceDetector.setFaceListener((FaceDetectListener)null);
-        Log.e(TAG, "[移除人脸识别回调]");
+        Log.e(TAG, "[移除人脸识别回调] removeCallback()");
         release();
         greetingFaceListener = null;
-        mHolder = null;
+        freeFaceTrackListener  = null;
+        if(mHolder!=null){
+            mHolder = null;
+        }
     }
 
-    public static void release() {
+    public void release() {
         try {
             if (camera != null) {
                 Log.e(TAG, "[释放摄像头资源]");
@@ -374,8 +455,8 @@ public class CameraAction implements SurfaceHolder.Callback, Camera.PreviewCallb
 
                 FaceDetectHelper.release();
             }
-            mFaceDetectCallback = null;
         } catch (Exception var1) {
+
         }
 
     }

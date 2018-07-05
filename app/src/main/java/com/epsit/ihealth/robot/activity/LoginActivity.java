@@ -1,4 +1,4 @@
-package com.epsit.ihealth.robot;
+package com.epsit.ihealth.robot.activity;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -20,29 +20,24 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.epsit.ihealth.robot.R;
+import com.epsit.ihealth.robot.base.BaseActivity;
+import com.epsit.ihealth.robot.model.ILoginModel;
+import com.epsit.ihealth.robot.presenter.impl.LoginPresenter;
+import com.epsit.ihealth.robot.view.ILoginView;
+
 import java.util.List;
 
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity   {
+public class LoginActivity extends BaseActivity<ILoginView, LoginPresenter> implements ILoginView    {
 
-    /**
-     * Id to identity READ_CONTACTS permission request.
-     */
     private static final int REQUEST_READ_CONTACTS = 0;
 
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
     private static final String[] DUMMY_CREDENTIALS = new String[]{
             "foo:hello", "bar@example.com:world"
     };
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
-    // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
     private View mProgressView;
@@ -52,7 +47,6 @@ public class LoginActivity extends AppCompatActivity   {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
 
@@ -92,27 +86,8 @@ public class LoginActivity extends AppCompatActivity   {
             return true;
         }
         return true;
-        /*if (checkSelfPermission(READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        }
-        if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
-            Snackbar.make(mEmailView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
-                    .setAction(android.R.string.ok, new View.OnClickListener() {
-                        @Override
-                        @TargetApi(Build.VERSION_CODES.M)
-                        public void onClick(View v) {
-                            requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
-                        }
-                    });
-        } else {
-            requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
-        }
-        return false;*/
     }
 
-    /**
-     * Callback received when a permissions request has been completed.
-     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
@@ -123,12 +98,6 @@ public class LoginActivity extends AppCompatActivity   {
         }
     }
 
-
-    /**
-     * Attempts to sign in or register the account specified by the login form.
-     * If there are form errors (invalid email, missing fields, etc.), the
-     * errors are presented and no actual login attempt is made.
-     */
     private void attemptLogin() {
         // Reset errors.
         mEmailView.setError(null);
@@ -153,10 +122,6 @@ public class LoginActivity extends AppCompatActivity   {
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
-        } else if (!isEmailValid(email)) {
-            mEmailView.setError(getString(R.string.error_invalid_email));
-            focusView = mEmailView;
-            cancel = true;
         }
 
         if (cancel) {
@@ -167,6 +132,17 @@ public class LoginActivity extends AppCompatActivity   {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
+            basePresenter.login(email,password, new ILoginModel.OnLoginListener() {
+                @Override
+                public void onSuccess() {
+                    basePresenter.faceInfoByCustomize();
+                }
+
+                @Override
+                public void onFail() {
+
+                }
+            });
             /*mAuthTask = new UserLoginTask(email, password);
             mAuthTask.execute((Void) null);*/
         }
@@ -225,6 +201,21 @@ public class LoginActivity extends AppCompatActivity   {
                         android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
 
         mEmailView.setAdapter(adapter);
+    }
+
+    @Override
+    public LoginPresenter createPresenter() {
+        return new LoginPresenter();
+    }
+
+    @Override
+    public void showDialog() {
+
+    }
+
+    @Override
+    public void hideDialog() {
+
     }
 
 

@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package com.epsit.ihealth.robot;
+package com.epsit.ihealth.robot.activity;
 
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.SurfaceView;
 
 import com.epsit.facelibrary.CameraAction;
 import com.epsit.facelibrary.callback.FaceDetectCallback;
+import com.epsit.ihealth.robot.R;
 
 import io.vov.vitamio.MediaPlayer;
 import io.vov.vitamio.Vitamio;
@@ -34,6 +36,7 @@ public class VideoViewDemo extends Activity implements FaceDetectCallback {
     String TAG ="VideoViewDemo";
     SurfaceView surfaceView;
     VideoView mVideoView;
+    CameraAction cameraAction;
     final String path = "http://gslb.miaopai.com/stream/3D~8BM-7CZqjZscVBEYr5g__.mp4";
     @Override
     public void onCreate(Bundle icicle) {
@@ -44,7 +47,9 @@ public class VideoViewDemo extends Activity implements FaceDetectCallback {
         setContentView(R.layout.videoview);
         surfaceView = findViewById(R.id.surfaceView);
         playfunction();
-        //CameraAction.init(this).setSurfaceView(surfaceView).setCallback(true, CameraAction.TrackType.GREETING, this).startTracker();
+        Log.e(TAG,"--------------->重新在新的界面添加人脸识别了");
+        cameraAction= new CameraAction.Builder().init(VideoViewDemo.this).setSurfaceView(surfaceView).setCallback(true, CameraAction.TrackType.GREETING, VideoViewDemo.this).create();
+        cameraAction.startTracker();
     }
 
 
@@ -79,6 +84,11 @@ public class VideoViewDemo extends Activity implements FaceDetectCallback {
         Log.e(TAG,"---Activity显示获取的人脸数："+faceCount);
         if(faceCount>0){
             Log.e(TAG,"---Activity显示获取的人脸数：count>0 有人脸");
+
+            if(cameraAction!=null){
+                cameraAction.removeCallback();
+            }
+
             finish();
         }else{
 

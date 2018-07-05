@@ -1,4 +1,4 @@
-package com.epsit.ihealth.robot;
+package com.epsit.ihealth.robot.activity;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -9,11 +9,13 @@ import android.view.SurfaceView;
 import com.epsit.facelibrary.CameraAction;
 import com.epsit.facelibrary.callback.FaceDetectCallback;
 import com.epsit.facelibrary.constant.SenseConfig;
+import com.epsit.ihealth.robot.R;
 
 public class CameraActivity extends AppCompatActivity implements FaceDetectCallback{
     String TAG = "CameraActivity";
     SurfaceView surfaceView;
     long lastHasFaceTime = 0l;
+    CameraAction cameraAction;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,14 +27,16 @@ public class CameraActivity extends AppCompatActivity implements FaceDetectCallb
     @Override
     protected void onResume() {
         super.onResume();
-        CameraAction.init(this).setSurfaceView(surfaceView).setCallback(true, CameraAction.TrackType.GREETING, this).startTracker();
+        cameraAction= new CameraAction.Builder().init(this).setSurfaceView(surfaceView).setCallback(true, CameraAction.TrackType.GREETING, this).create();
+        cameraAction.startTracker();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         lastHasFaceTime=0L;
-        CameraAction.init(this).removeCallback();
+        if(cameraAction!=null)
+            cameraAction.removeCallback();
     }
 
     @Override
@@ -47,7 +51,9 @@ public class CameraActivity extends AppCompatActivity implements FaceDetectCallb
             } else {
                 //没有人脸更新时间，如果连续30s没有人脸，就进入空闲状态，跳转界面，播放视频和音频
                 if (System.currentTimeMillis() - lastHasFaceTime >= SenseConfig.FREE_TIME * 1000) {
-                    CameraAction.init(this).removeCallback();
+                    if(cameraAction!=null){
+                        cameraAction.removeCallback();
+                    }
                     //startActivity(new Intent(this, EmptyActivity.class));
                     startActivity(new Intent(this, VideoViewDemo.class));
                 }

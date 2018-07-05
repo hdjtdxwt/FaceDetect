@@ -1,4 +1,4 @@
-package com.epsit.ihealth.robot;
+package com.epsit.ihealth.robot.activity;
 
 import android.Manifest;
 import android.annotation.TargetApi;
@@ -11,14 +11,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.epsit.facelibrary.constant.SenseConfig;
+import com.epsit.ihealth.robot.R;
 import com.epsit.ihealth.robot.util.AlertError;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import mobile.ReadFace.YMFaceTrack;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     static String TAG = "MainActivity";
@@ -98,12 +96,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Toast.makeText(this,"缺少权限！",Toast.LENGTH_SHORT).show();
 
             }else{ //有权限
-                startActivity(new Intent(this, VideoViewDemo.class));
-                //startActivity(new Intent(this, CameraActivity.class));
+                ///startActivity(new Intent(this, VideoViewDemo.class));
+                startActivity(new Intent(this, CameraActivity.class));
             }
         }else{
-            //startActivity(new Intent(this, CameraActivity.class));
-            startActivity(new Intent(this, VideoViewDemo.class));
+            startActivity(new Intent(this, CameraActivity.class));
+            //startActivity(new Intent(this, VideoViewDemo.class));
         }
 
     }
