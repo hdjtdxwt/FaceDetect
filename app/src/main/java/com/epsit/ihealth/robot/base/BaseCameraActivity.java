@@ -6,6 +6,9 @@ import android.hardware.Camera;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
 
+import com.epsit.facelibrary.constant.SenseConfig;
+import com.epsit.ihealth.robot.R;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,7 +58,7 @@ public abstract class BaseCameraActivity extends FaceBaseActivity implements Cam
 
         if (DeviceUtil.getModel().equals("Nexus 6")) {
             params.camera_ori_front = 180;
-            BaseApplication.reverse_180 = true;
+            RobotApplication.reverse_180 = true;
         }
 
         params.previewFrameListener = this;
@@ -208,7 +211,7 @@ public abstract class BaseCameraActivity extends FaceBaseActivity implements Cam
                 scale_bit = surface_h / (float) ih;
                 orientation = YMFaceTrack.FACE_0;
 
-                if (BaseApplication.reverse_180) {
+                if (RobotApplication.reverse_180) {
                     orientation += 180;
                 }
             }

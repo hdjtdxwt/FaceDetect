@@ -33,8 +33,6 @@ import dou.utils.DLog;
 import dou.utils.StringUtils;
 import mobile.ReadFace.YMFace;
 import mobile.ReadFace.net.NetFaceTrack;
-import readsense.face.model.User;
-import readsense.face.util.DataSource;
 
 /**
  * Created by mac on 16/8/11.
@@ -178,7 +176,7 @@ public class RegisterImageCameraActivity extends BaseCameraActivity {
                         if (personId == -111) {
                             addFace1(bytes, rect);
                         } else { //之前通过其他方式添加过人脸
-                            User user = DrawUtil.getUserById(personId + "");
+                            /*User user = DrawUtil.getUserById(personId + "");
                             String name = personId + "";
                             if (user != null) name = user.getName();
 
@@ -214,7 +212,7 @@ public class RegisterImageCameraActivity extends BaseCameraActivity {
                                             addFace1(bytes, rect);
                                         }
                                     });
-                            builder.create().show();
+                            builder.create().show();*/
                         }
                     }
                 } else {
@@ -347,8 +345,8 @@ public class RegisterImageCameraActivity extends BaseCameraActivity {
                 if (!isAdd) isAdd = true;
                 if (isKnowing) {
                     isAdd = false;
-                    Toast.makeText(RegisterImageCameraActivity.this,
-                            String.format(getString(R.string.know_yet), personId), Toast.LENGTH_SHORT).show();
+                    /*Toast.makeText(RegisterImageCameraActivity.this,
+                            String.format(getString(R.string.know_yet), personId), Toast.LENGTH_SHORT).show();*/
                 }
                 break;
         }
@@ -360,7 +358,7 @@ public class RegisterImageCameraActivity extends BaseCameraActivity {
             stopCamera();
             finish();
         } else {
-            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            /*final AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(R.string.dalog_notice).setMessage(String.format(getString(R.string.dialog_msg1), addCount))
                     .setNegativeButton(R.string._sure_out, new DialogInterface.OnClickListener() {
                         @Override
@@ -370,9 +368,9 @@ public class RegisterImageCameraActivity extends BaseCameraActivity {
                             finish();
                         }
                     }).setPositiveButton(R.string._keep_pre, null);
-            builder.create().show();
+            builder.create().show();*/
         }
-        DrawUtil.updateDataSource();
+       // DrawUtil.updateDataSource();
     }
 
     public void saveImageFromCamera(int personId, int count, byte[] yuvBytes) {
@@ -449,7 +447,7 @@ public class RegisterImageCameraActivity extends BaseCameraActivity {
                         (int) rect[3], (int) rect[2], matrix, true);
             } else if (getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
 
-                if (BaseApplication.reverse_180) {
+                if (RobotApplication.reverse_180) {
                     Matrix matrix = new Matrix();
                     matrix.postRotate(180);
                     head = Bitmap.createBitmap(image, iw - (int) rect[0] - (int) rect[2], ih - (int) rect[1] - (int) rect[3],
@@ -470,7 +468,7 @@ public class RegisterImageCameraActivity extends BaseCameraActivity {
 
     void doEnd() {
 
-        final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        /*final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setCancelable(false);
         final EditText et = new EditText(mContext);
         et.setGravity(Gravity.CENTER);
@@ -495,7 +493,7 @@ public class RegisterImageCameraActivity extends BaseCameraActivity {
 //                            tmpFile.renameTo(new File("/sdcard/img/fr/" + name));
 //                        }
 
-                        User user = new User("" + personId, name, age, gender);
+                        *//*User user = new User("" + personId, name, age, gender);
                         user.setScore(score);
                         DataSource dataSource = new DataSource(mContext);
                         dataSource.insert(user);
@@ -526,11 +524,11 @@ public class RegisterImageCameraActivity extends BaseCameraActivity {
                                         onBackPressed();
                                     }
                                 });
-                        builder.create().show();
+                        builder.create().show();*//*
 
                     }
                 });
-        builder.create().show();
+        builder.create().show();*/
     }
 
 

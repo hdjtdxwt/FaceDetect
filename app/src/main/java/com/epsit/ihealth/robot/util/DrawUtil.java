@@ -9,6 +9,8 @@ import android.hardware.Camera;
 import android.view.SurfaceView;
 import android.view.View;
 
+import com.epsit.ihealth.robot.base.RobotApplication;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,29 +21,25 @@ import dou.utils.DLog;
 import dou.utils.DisplayUtil;
 import dou.utils.StringUtils;
 import mobile.ReadFace.YMFace;
-import readsense.face.base.BaseApplication;
-import readsense.face.model.User;
-
-import static readsense.face.base.BaseApplication.getAppContext;
 
 /**
  * Created by mac on 16/8/15.
  */
 public class DrawUtil {
 
-    private static Map<Integer, User> userMap = new HashMap<>();
+    /*private static Map<Integer, User> userMap = new HashMap<>();
     private static List<User> userList = new ArrayList<>();
 
     public static User getUserById(String id) {
         DataSource dataSource = new DataSource(getAppContext());
         return dataSource.getUserByPersonId(id);
-    }
+    }*/
 
     public static void clearDb() {
-        DataSource dataSource = new DataSource(getAppContext());
+        /*DataSource dataSource = new DataSource(getAppContext());
         List<User> userList = dataSource.getAllUser();
         for (int i = 0; i < userList.size(); i++) {
-            String imgPath = BaseApplication.getAppContext().getCacheDir()
+            String imgPath = RobotApplication.getInstance().getCacheDir()
                     + "/" + userList.get(i).getPersonId() + ".jpg";
             File imgFile = new File(imgPath);
             if (imgFile.exists()) {
@@ -49,10 +47,10 @@ public class DrawUtil {
             }
         }
         userMap.clear();
-        dataSource.clearTable();
+        dataSource.clearTable();*/
     }
 
-    public static List<User> updateDataSource() {
+    /*public static List<User> updateDataSource() {
 
         long time = System.currentTimeMillis();
         DataSource dataSource = new DataSource(getAppContext());
@@ -70,16 +68,16 @@ public class DrawUtil {
         }
         DLog.d(" update sql cost: " + (System.currentTimeMillis() - time));
         return userList;
-    }
+    }*/
 
-    public static String getNameFromPersonId(int personId) {
+    /*public static String getNameFromPersonId(int personId) {
         if (personId > 0 && userMap.containsKey(personId)) {
 
             User user = userMap.get(personId);
             return user.getName();
         }
         return "";
-    }
+    }*/
 
 
     public static void drawAnim(Object obj, View outputView, float scale_bit, int cameraId) {
@@ -113,7 +111,7 @@ public class DrawUtil {
                 for (int i = 0; i < faces.size(); i++) {
 
                     paint.setColor(0x44ffffff);
-                    int size = DisplayUtil.dip2px(getAppContext(), 3);
+                    int size = DisplayUtil.dip2px(RobotApplication.getInstance(), 3);
 
                     paint.setStrokeWidth(size);
                     paint.setStyle(Paint.Style.STROKE);
@@ -122,7 +120,7 @@ public class DrawUtil {
 
                     float[] rect = ymFace.getRect();
                     float x1 = viewW - rect[0] * scale_bit - rect[2] * scale_bit;
-                    if (cameraId == (BaseApplication.yu ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_BACK))
+                    if (cameraId == (RobotApplication.yu ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_BACK))
                         x1 = rect[0] * scale_bit;
                     float y1 = rect[1] * scale_bit;
 
@@ -134,7 +132,7 @@ public class DrawUtil {
                     //draw grid
                     int line = 10;
                     int per_line = (int) (rect_width / (line + 1));
-                    int smailSize = DisplayUtil.dip2px(getAppContext(), 1.5f);
+                    int smailSize = DisplayUtil.dip2px(RobotApplication.getInstance(), 1.5f);
                     paint.setStrokeWidth(smailSize);
                     for (int j = 1; j < line + 1; j++) {
                         canvas.drawLine(x1 + per_line * j, y1, x1 + per_line * j, y1 + rect_width, paint);
@@ -145,7 +143,7 @@ public class DrawUtil {
                     paint.setColor(Color.WHITE);
 //                    注意前置后置摄像头问题
                     float x2 = viewW - rect[0] * scale_bit - rect[2] * scale_bit;
-                    if (cameraId == (BaseApplication.yu ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_BACK))
+                    if (cameraId == (RobotApplication.yu ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_BACK))
                         x2 = rect[0] * scale_bit;
                     float y2 = rect[1] * scale_bit;
 
@@ -172,7 +170,7 @@ public class DrawUtil {
                     StringBuilder sb = new StringBuilder();
 //                    sb.append("trackId : " + ymFace.getTrackId() + " ");
 
-                    if (personId > 0 && userMap.containsKey(personId)) {
+                    /*if (personId > 0 && userMap.containsKey(personId)) {
 
                         User user = userMap.get(personId);
                         String name = user.getName();
@@ -199,13 +197,13 @@ public class DrawUtil {
                             sb.append(gender).append("/");
                         if (!StringUtils.isEmpty(age))
                             sb.append(age);
-                    }
+                    }*/
 
 //                    sb.append(" con = " + ymFace.getConfidence());
                     paint.setColor(Color.WHITE);
                     paint.setStrokeWidth(0);
                     paint.setStyle(Paint.Style.FILL);
-                    int fontSize = DisplayUtil.dip2px(getAppContext(), 20);
+                    int fontSize = DisplayUtil.dip2px(RobotApplication.getInstance(), 20);
                     paint.setTextSize(fontSize);
                     canvas.drawText(sb.toString(), x1, y1 - 30, paint);
                 }
@@ -216,7 +214,7 @@ public class DrawUtil {
                     paint.setAntiAlias(true);
                     paint.setStyle(Paint.Style.FILL);
 
-                    int sizet = DisplayUtil.sp2px(BaseApplication.getAppContext(), BaseApplication.yu ? 28 : 17);
+                    int sizet = DisplayUtil.sp2px(RobotApplication.getInstance(), RobotApplication.yu ? 28 : 17);
                     paint.setTextSize(sizet);
 
                     canvas.drawText(fps, 20, viewH * 3 / 17, paint);

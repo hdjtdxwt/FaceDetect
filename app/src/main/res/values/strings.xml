@@ -42,4 +42,40 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+
+    <string name="count_start_1">人脸库管理</string>
+    <string name="count_start_2">人脸识别</string>
+    <string name="count_start_3">更多功能</string>
+    <string name="count_start_4">测试</string>
+
+    <string name="insert_next">跳过</string>
+    <string name="points">关键点</string>
+    <string name="more_detect_person">活体检测</string>
+    <string name="input_face">录入人脸</string>
+    <string name="photograph_input">拍照录入</string>
+    <string name="video_input">视频录入</string>
+    <string name="start_register">开始注册</string>
+    <string name="start_">开始</string>
+    <string name="manage_edit">编辑</string>
+    <string name="person_list">人脸列表</string>
+    <string name="manage_ending">完成</string>
+    <string name="manage_toast_none_select">未选中任何可删除项！</string>
+    <string name="manage_sure_delete">确定删除选中的人脸数据？</string>
+    <string name="manage_delete">删除</string>
+    <string name="image_sure_next">当前录入完成，是否进行人脸识别？</string>
+    <string name="manage_selete_all">全选</string>
+    <string name="video_re_failure">当前录入失败，是否重新注册？</string>
+    <string name="video_tips0">请点击下面的示意图移动的脸,录制一段3秒的视频</string>
+    <string name="verify_success">验证通过</string>
+    <string name="verify_failed">验证失败</string>
+    <string name="liveness_try_more">多试几次</string>
+    <string name="liveness_facing_screen">请将脸对准屏幕</string>
+    <string name="liveness_back">返回</string>
+    <string name="liveness_once_more">再来一次</string>
+    <string name="more_points_str">该功能权限尚未开放，如需体验请联系市场人员</string>
+    <string name="more_points_ok">知道了</string>
+    <string name="image_indert_msg">请按以下示意依次添加照片</string>
+    <string name="camera_error">This device doesn\'t support Camera2 API.</string>
+    <string name="_settings">设置及说明</string>
+    <string name="points_switch">切换</string>
 </resources>

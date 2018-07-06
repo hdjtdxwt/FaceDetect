@@ -10,6 +10,7 @@
         layout="@layout/camera_view"
         android:visibility="gone" />
 
+    <include layout="@layout/count_title" />
 
     <Button
         android:id="@+id/add_face"
@@ -51,7 +52,7 @@
         android:layout_alignParentRight="true"
         android:layout_marginBottom="15dp"
         android:layout_marginRight="15dp"
-        android:text="@string/insert_next"
+        android:text="insert_next"
         android:textColor="#FFFF6600"
         android:textSize="20sp" />
 
@@ -69,7 +70,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="10dp"
             android:gravity="center"
-            android:text="@string/image_indert_msg"
+            android:text="image_indert_msg"
             android:textColor="#393939"
             android:textSize="24sp" />
 
