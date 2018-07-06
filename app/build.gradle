@@ -1,4 +1,6 @@
 apply plugin: 'com.android.application'
+apply plugin: 'org.greenrobot.greendao'
+
 
 android {
     compileSdkVersion 26
@@ -23,6 +25,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    greendao {
+        schemaVersion 1
+        daoPackage 'com.epsit.ihealt.robot.greendao.gen'
+        targetGenDir 'src/main/java'
+    }
 }
 
 dependencies {
@@ -30,8 +37,15 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+
+
     compile project(':facelibrary')
     compile project(':vitamio')
+
+
+    compile project(':library')
+    compile 'org.greenrobot:greendao:3.1.0'
+    compile 'org.greenrobot:eventbus:3.0.0'
     compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.android.support:design:26.+'
@@ -45,10 +59,5 @@ dependencies {
     compile 'com.squareup.retrofit2:adapter-rxjava:2.0.2'
     compile 'com.google.code.gson:gson:2.4'
     compile 'com.android.support:multidex:1.0.0'
-    compile 'org.litepal.android:core:1.6.0'
-
-    compile 'org.greenrobot:eventbus:3.0.0'
-
     testCompile 'junit:junit:4.12'
-    compile project(':library')
 }

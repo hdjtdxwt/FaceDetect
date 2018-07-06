@@ -1,5 +1,6 @@
 package com.epsit.ihealth.robot.activity;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
@@ -23,18 +24,22 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.epsit.ihealt.robot.greendao.gen.FaceImgDataBeanDao;
 import com.epsit.ihealth.robot.R;
 import com.epsit.ihealth.robot.base.BaseActivity;
+import com.epsit.ihealth.robot.base.RobotApplication;
+import com.epsit.ihealth.robot.dbentity.FaceImgDataBean;
 import com.epsit.ihealth.robot.ebentity.EbDownloadFileInfo;
 import com.epsit.ihealth.robot.model.ILoginModel;
 import com.epsit.ihealth.robot.presenter.impl.LoginPresenter;
+import com.epsit.ihealth.robot.util.AlertError;
 import com.epsit.ihealth.robot.view.ILoginView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.litepal.crud.DataSupport;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import dou.utils.ToastUtil;
@@ -56,14 +61,14 @@ public class LoginActivity extends BaseActivity<ILoginView, LoginPresenter> impl
     private View mLoginFormView;
     private int totalDownloadFileCount;
     private int totalDownloadFinished;
+    FaceImgDataBeanDao faceImgDao;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         horizontalPb = (ProgressBar) findViewById(R.id.download_progress);
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
-        populateAutoComplete();
-
+        faceImgDao = RobotApplication.getInstance().getDaoSession().getFaceImgDataBeanDao();
         mPasswordView = (EditText) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -86,30 +91,54 @@ public class LoginActivity extends BaseActivity<ILoginView, LoginPresenter> impl
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Log.e(TAG, "=-----权限获取");
+            requestAllPermissionsIfNeed();
+        }
         EventBus.getDefault().register(this);
     }
-
-    private void populateAutoComplete() {
-        if (!mayRequestContacts()) {
-            return;
-        }
-
-    }
-
-    private boolean mayRequestContacts() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return true;
-        }
-        return true;
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_READ_CONTACTS) {
-            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                populateAutoComplete();
+    @TargetApi(Build.VERSION_CODES.M)
+    protected void requestAllPermissionsIfNeed() {
+        List<String> permissionList = new ArrayList<String>();
+        // 申请相机权限
+        // Camera permission
+        if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
+                // 用户拒绝过权限申请，下一次再进入的时候给出的解释
+                AlertError.showDialog(this, getResources().getString(R.string.error_title), getResources().getString(R.string.no_camera_perm_hint));
+            } else {
+                permissionList.add(Manifest.permission.CAMERA);
             }
+        }
+        // 我们需要从应用外的目录获取照片，所以需要申请读取外部存储权限
+        // read external storage permission, for we need to read the photos
+        // outside application-specific directories
+        /*if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                AlertError.showDialog(this, getResources().getString(R.string.error_title),
+                        getResources().getString(R.string.no_file_perm_hint));
+            } else {
+                permissionList.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+            }
+        }*/
+        if (checkSelfPermission(Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
+            if (shouldShowRequestPermissionRationale(Manifest.permission.INTERNET)) {
+                AlertError.showDialog(this, getResources().getString(R.string.error_title),
+                        getResources().getString(R.string.no_file_perm_hint));
+            } else {
+                permissionList.add(Manifest.permission.INTERNET);
+            }
+        }
+        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                AlertError.showDialog(this, getResources().getString(R.string.error_title),
+                        getResources().getString(R.string.no_file_perm_hint));
+            } else {
+                permissionList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            }
+        }
+        if (permissionList.size() > 0) {
+            requestPermissions(permissionList.toArray(new String[permissionList.size()]), 0);
         }
     }
 
@@ -160,25 +189,30 @@ public class LoginActivity extends BaseActivity<ILoginView, LoginPresenter> impl
 
     @Override
     public void onFail() {
+        showProgress(false);
         Toast.makeText(getApplicationContext(),"登录失败",Toast.LENGTH_SHORT).show();
     }
     @Override
-    public void getCount(int count) {
-        totalDownloadFileCount = count;
-        horizontalPb.setMax(totalDownloadFileCount);
+    public void getCount(int count,int needDownload) {
+        Log.e(TAG,"后台返回数量："+count+"  本地需要下载："+needDownload);
+        totalDownloadFileCount = needDownload;
+        horizontalPb.setMax(needDownload);
     }
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void onDownloadProgresschange(EbDownloadFileInfo info){
         totalDownloadFinished ++;
         horizontalPb.setProgress(totalDownloadFinished);
         if(!info.isSuccess()){
-            /*DeleteBuilder<SprojectMember, String> deleteBuilder = projectMemberDao.deleteBuilder();
-            deleteBuilder.where().eq("projectId", Global.user.getUserId());
-            deleteBuilder.delete();*/
+            String url = info.getDownloadUrl();
             //DataSupport.delete() //删除这个没下载成功的
             Log.e(TAG, "---又失败了一个："+info.getDownloadUrl());
+        }else{
+            Log.e(TAG, "-下载成功了一个："+info.getDownloadUrl());
         }
-
+        if(totalDownloadFileCount==totalDownloadFinished){
+            showProgress(false);
+            horizontalPb.setVisibility(View.GONE);
+        }
     }
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
@@ -195,9 +229,6 @@ public class LoginActivity extends BaseActivity<ILoginView, LoginPresenter> impl
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private void showProgress(final boolean show) {
-        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-        // for very easy animations. If available, use these APIs to fade-in
-        // the progress spinner.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
@@ -218,22 +249,16 @@ public class LoginActivity extends BaseActivity<ILoginView, LoginPresenter> impl
                     mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
                 }
             });
+            horizontalPb.setVisibility(show ? View.GONE : View.VISIBLE);
         } else {
             // The ViewPropertyAnimator APIs are not available, so simply show
             // and hide the relevant UI components.
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
             mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            horizontalPb.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
 
-    private void addEmailsToAutoComplete(List<String> emailAddressCollection) {
-        //Create adapter to tell the AutoCompleteTextView what to show in its dropdown list.
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(LoginActivity.this,
-                        android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
-
-        mEmailView.setAdapter(adapter);
-    }
 
     @Override
     public LoginPresenter createPresenter() {
@@ -247,7 +272,6 @@ public class LoginActivity extends BaseActivity<ILoginView, LoginPresenter> impl
 
     @Override
     public void hideDialog() {
-
     }
 
     @Override

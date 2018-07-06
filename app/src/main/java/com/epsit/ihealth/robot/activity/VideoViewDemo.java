@@ -99,4 +99,9 @@ public class VideoViewDemo extends Activity implements FaceDetectCallback {
     public void nofindFaceHandler() {
 
     }
+
+    @Override
+    public void getFaceId(int faceId) {
+
+    }
 }

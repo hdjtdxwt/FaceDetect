@@ -27,7 +27,10 @@ public class SenseConfig {
     public final static int MSG_FREE_FACETRACKING_HASFACE = -104;
     public final static int MSG_FREE_FACETRACKING_NOFACE = -105;
 
-
+    //考勤打开 人脸识别消息（消息发给子线程,将图像发给子线程）
+    public final static int MSG_SIGNING_FACETRACKING = -106;
+    public final static int MSG_SIGNING_GETFACEID = -107;
+    public final static int MSG_SIGNING_NOFACE = -108;
 
 
 }

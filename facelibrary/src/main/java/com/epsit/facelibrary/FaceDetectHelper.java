@@ -10,6 +10,7 @@ import com.epsit.facelibrary.constant.SenseConfig;
 import java.util.List;
 
 import dou.utils.BitmapUtil;
+import dou.utils.DLog;
 import mobile.ReadFace.YMFace;
 import mobile.ReadFace.YMFaceTrack;
 
@@ -42,8 +43,16 @@ public class FaceDetectHelper {
             faceTrack.setDistanceType(YMFaceTrack.DISTANCE_TYPE_NEAR);//1-2米内的脸会识别
 
             faceTrack.setOrientation(orientation);
-            //激活初始化，另一种是普通初始化
-            int result = faceTrack.initTrack(mContext.getApplicationContext(), YMFaceTrack.FACE_270, YMFaceTrack.RESIZE_WIDTH_640, SenseConfig.appid, SenseConfig.appsecret);
+            int result = -1;
+            if(orientation==0){
+                //激活初始化，另一种是普通初始化
+                result = faceTrack.initTrack(mContext.getApplicationContext(), YMFaceTrack.FACE_0, YMFaceTrack.RESIZE_WIDTH_640, SenseConfig.appid, SenseConfig.appsecret);
+
+            }else{
+                //激活初始化，另一种是普通初始化
+                result = faceTrack.initTrack(mContext.getApplicationContext(), YMFaceTrack.FACE_270, YMFaceTrack.RESIZE_WIDTH_640, SenseConfig.appid, SenseConfig.appsecret);
+
+            }
 
             if (result == 0) {
                 faceTrack.setRecognitionConfidence(75);
@@ -54,6 +63,14 @@ public class FaceDetectHelper {
                 Toast.makeText(mContext, "初始化检测器失败！请打开wifi，同时检查camera权限是否有！", Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    /**
+     * 获取总的有多少人脸
+     * @return
+     */
+    public static int getAllCount(){
+        return faceTrack.getAlbumSize();
     }
     public static void greetingCheck(byte[] bytes,int iw,int ih, GreetingFaceCallback callback) {
         final List<YMFace> faces = faceTrack.trackMulti(bytes, iw, ih);
@@ -79,13 +96,16 @@ public class FaceDetectHelper {
     }
 
     /**
-     * camera获取的图像里的人脸是否已经注册过了
+     * camera获取的图像里的人脸是否已经注册过了(可以用来做判断人脸是谁的功能，得到这个人的faceId就可以)
      * @param data
      * @param iw
      * @param ih
-     * @return 返回值 personId > 0 //已经认识，不能再添加，可以选择删除之前的重新添加。如果 personId < 0 //还不认识，可以添加   返回0表示没有人脸
+     * @return 返回值 personId > 0 //已经认识，返回的faceId，不能再添加，可以选择删除之前的重新添加。如果 personId < 0 //还不认识，可以添加   返回0表示没有人脸
      */
-    public static int isFaceAdded(byte[]data, int iw, int ih){
+    public static boolean isFaceAdded(byte[]data, int iw, int ih){
+        return identify(data, iw, ih) >0 ? true: false;
+    }
+    public static int identify(byte[]data, int iw, int ih){
         List<YMFace>list = faceTrack.trackMulti(data,iw,ih);
         if(list!=null && list.size()>=1){ //有人，按理只能有一个人
             int personId = faceTrack.identifyPerson(0);//identifyPerson的参数传0，识别人脸
@@ -94,20 +114,74 @@ public class FaceDetectHelper {
             return 0;//返回0表示没有人脸
         }
     }
-
     /**
-     * 判断一个bitmap里是否有注册过的人脸
+     * 判断一个bitmap里是否有注册过的人脸(可以用来做判断人脸是谁的功能，得到这个人的faceId就可以)
+     * @param bitmap
+     * @param width
+     * @param height
+     * @return  -1 图片未检测到人脸 ; -111不认识这个人，可以注册  ; 大于0，也就是返回的这个人的faceid,说明注册过
+     */
+    public static boolean isFaceAdded(Bitmap bitmap,int width,int height){
+        return identify(bitmap,width,height)>0 ? true: false;
+    }
+    public static int identify(Bitmap bitmap,int width,int height){
+        List<YMFace> ymFaces = faceTrack.detectMultiBitmap(bitmap);
+        int personId = -1;
+        if(ymFaces!=null && ymFaces.size()>0){
+            Log.e(TAG,"有人脸，判断是谁的faceId");
+            personId = faceTrack.identifyPerson(0);//identifyPerson的参数传0，识别人脸表示去，
+            //返回值:  -1 图片未检测到人脸  -111不认识这个人，可以注册 ， 大于0说明注册过
+        }
+        return personId;
+    }
+    public static int addFace(byte[]data, int iw, int ih){
+        List<YMFace>list = faceTrack.trackMulti(data,iw,ih);
+        if(list!=null && list.size()>=1){ //有人，按理只能有一个人
+            int personId = faceTrack.identifyPerson(0);//identifyPerson的参数传0，识别人脸
+            if(personId== -111){
+
+                personId = faceTrack.addPerson(0);//添加人脸
+                int gender_score = faceTrack.getGender(0);
+                int gender_confidence = faceTrack.getGenderConfidence(0);
+                String gender = " ";
+                if (gender_confidence >= 90)
+                    gender = faceTrack.getGender(0) == 0 ? "F" : "M";
+                DLog.d("add Face 1 " + personId +   " gender: " + gender);
+            }else if(personId == -1){
+                Log.e(TAG,"没有人脸");
+            }else if(personId>0){ //说明之前有这个人脸，personId值就是这个
+
+            }
+            return personId;
+        }else{
+            return 0;//返回0表示没有人脸
+        }
+    }
+
+    public static int deleteAll(){
+        return faceTrack.resetAlbum();
+    }
+    /**
+     * 添加人脸之前，都判断下是否添加过，如果添加过，返回之前的人脸id值，如果没有添加过，将添加并返回添加的人脸id
      * @param bitmap
      * @param width
      * @param height
      * @return
      */
-    public static int isFaceAdded(Bitmap bitmap,int width,int height){
+    public static int addFace(Bitmap bitmap,int width,int height){
         List<YMFace> ymFaces = faceTrack.detectMultiBitmap(bitmap);
-        int personId = faceTrack.identifyPerson(0);//identifyPerson的参数传0，识别人脸
+        int personId = 0;
+        if(ymFaces!=null && ymFaces.size()>0){
+            Log.e(TAG,"有人脸图片-->集合大于0");
+            personId = faceTrack.identifyPerson(0);//identifyPerson的参数传0，识别人脸
+            if(personId ==-111){ //-1 图片未检测到人脸  -111不认识这个人，可以注册  大于0说明注册过
+                personId = faceTrack.addPerson(0);
+            }else if(personId>0){
+                Log.e(TAG,"这个人脸认识，之前初始化过的");
+            }
+        }
         return personId;
     }
-
     /**
      * 人脸比对
      * @param faceIndex1  人脸1在人脸库中的index值
@@ -131,7 +205,6 @@ public class FaceDetectHelper {
     public static void release(){
         if(faceTrack!=null){
             faceTrack.onRelease();
-
         }
         if(mContext!=null){
             mContext=null;

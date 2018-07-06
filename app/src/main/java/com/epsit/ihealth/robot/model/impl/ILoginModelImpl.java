@@ -8,6 +8,8 @@ import android.text.TextUtils;
 import android.util.Log;
 
 
+import com.epsit.ihealt.robot.greendao.gen.DaoSession;
+import com.epsit.ihealt.robot.greendao.gen.FaceImgDataBeanDao;
 import com.epsit.ihealth.robot.base.RobotApplication;
 import com.epsit.ihealth.robot.base.RobotLocalOperator;
 import com.epsit.ihealth.robot.dbentity.FaceImgDataBean;
@@ -18,9 +20,9 @@ import com.epsit.ihealth.robot.requestbean.FaceImgLibInitResponse;
 import com.epsit.ihealth.robot.requestbean.LoginRequest;
 import com.epsit.ihealth.robot.requestbean.LoginResponse;
 import com.epsit.ihealth.robot.retrofit.ApiManager;
+import com.epsit.ihealth.robot.service.DownloadService;
 import com.google.gson.Gson;
 
-import org.litepal.crud.DataSupport;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -123,7 +125,7 @@ public class ILoginModelImpl implements ILoginModel {
                     @Override
                     public void onError(Throwable e) {
                         if (listener != null) {
-                            listener.getCount(0);
+                            listener.getCount(0,0);
                         }
                     }
 
@@ -134,48 +136,38 @@ public class ILoginModelImpl implements ILoginModel {
                             List<FaceImgDataBean> list = faceImgLibInitResponse.getData();
                             if (list != null && list.size() > 0) {
                                 Log.e(TAG, "list有数据->"+list.size());
+                                int count = 0;
 
-                                if (listener != null) {
-                                    listener.getCount(list.size());
-                                }
-                                //发布在外网的，返回的这个数据集合的list<人物bean list<HeadImage{url，version}>>嵌套比较多，不好直接保存，所以save会报错
-                                /*for(FaceImgDataBean bean: list ){
-                                    Log.e(TAG,"bean: "+new Gson().toJson(bean));
-                                    Log.e(TAG,"url="+(bean.getHeadImage().size() >0?bean.getHeadImage().get(0).getHeadImage():"空"));
-                                    FaceImgDataBean dbBean = DataSupport.where("name = ?", bean.getName()).findFirst(FaceImgDataBean.class);
-                                    if(dbBean==null){
-                                        Log.e(TAG,"cursor没有这一条数据");
-                                        Intent intent = new Intent(ACTION_DOWNLOAD);
-                                        intent.putExtra("downloadUrl",bean.getHeadImage().get(0).getHeadImage());
-                                        bean.save();//保存到数据库，下载失败会删除
-                                        RobotApplication.getInstance().startService(intent);
-                                    }else{
-                                        Log.e(TAG,"数据库有数据");
-                                    }
-                                }*/
-
-                                /*for(FaceImgDataBean bean: list ){
+                                for(FaceImgDataBean bean: list ){
                                     Log.e(TAG,"bean: "+new Gson().toJson(bean));
                                     Log.e(TAG,"url="+bean.getFaceImg().trim());
-                                    FaceImgDataBean dbBean = DataSupport.where("idImg = ?", bean.getFaceImg()).findFirst(FaceImgDataBean.class);
+
+                                    FaceImgDataBeanDao faceImgDao = RobotApplication.getInstance().getDaoSession().getFaceImgDataBeanDao();
+                                    DaoSession daoSession = RobotApplication.getInstance().getDaoSession();
+                                    FaceImgDataBean dbBean = faceImgDao.queryBuilder().
+                                            where(FaceImgDataBeanDao.Properties.FaceImg.eq(bean.getFaceImg())).build().unique();
                                     if(dbBean==null){
-                                        Log.e(TAG,"cursor没有这一条数据");
-                                        Intent intent = new Intent(ACTION_DOWNLOAD);
-                                        intent.putExtra("downloadUrl",bean.getFaceImg());
-                                        bean.save();//保存到数据库，下载失败会删除
-                                        RobotApplication.getInstance().startService(intent);
+                                        count++;//需要下载的数量自增
+                                        Log.e(TAG,"数据库中没有这一条数据");
+                                        Intent intent = new Intent(RobotApplication.getInstance().getApplicationContext(), DownloadService.class);
+                                        intent.putExtra("bean", bean);
+
+                                        RobotApplication.getInstance().startService(intent);//开启现在线程去下载图片
                                     }else{
-                                        Log.e(TAG,"数据库有数据");
+                                        Log.e(TAG,"数据库有数据，不处理");
                                     }
-                                }*/
+                                }
+                                if (listener != null) {
+                                    listener.getCount(list.size(), count);
+                                }
                             } else {
                                 if (listener != null) {
-                                    listener.getCount(0);
+                                    listener.getCount(0,0);
                                 }
                             }
                         } else {
                             if (listener != null) {
-                                listener.getCount(0);
+                                listener.getCount(0,0);
                             }
                         }
                     }

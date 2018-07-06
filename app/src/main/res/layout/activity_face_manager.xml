@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.epsit.ihealth.robot.activity.FaceManagerActivity">
+
+    <Button
+        android:id="@+id/initSelf"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="初始化自己的人脸（图片）"
+        android:layout_marginTop="30dp"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:id="@+id/initAllDir"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="初始化几百张"
+        android:layout_below="@id/initSelf"
+        android:layout_marginTop="20dp"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:id="@+id/deleteAll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="删除所有"
+        android:layout_marginTop="20dp"
+        android:layout_below="@id/initAllDir"
+        android:layout_alignParentStart="true" />
+    <Button
+        android:id="@+id/compare"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="添加相似（对比）"
+        android:layout_marginTop="14dp"
+        android:layout_below="@id/deleteAll"
+        android:layout_alignParentStart="true" />
+    <Button
+        android:id="@+id/addFromCamera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="摄像头添加"
+        android:layout_marginTop="14dp"
+        android:layout_below="@id/compare"
+        android:layout_alignParentStart="true" />
+</RelativeLayout>

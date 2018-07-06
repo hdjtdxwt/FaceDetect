@@ -66,4 +66,9 @@ public class CameraActivity extends AppCompatActivity implements FaceDetectCallb
     public void nofindFaceHandler() {
 
     }
+
+    @Override
+    public void getFaceId(int faceId) {
+
+    }
 }

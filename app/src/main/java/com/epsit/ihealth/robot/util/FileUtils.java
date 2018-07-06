@@ -28,7 +28,7 @@ public class FileUtils {
 //    public static String logFileName1 = "2017-8-24.txt"; //文件名称 log
     public static String errorString = "uncaughtException.log";
 
-    public static final String faceimage = "/epsit/faceimage/";
+    public static final String faceimage = new File(Environment.getExternalStorageDirectory(),"epsit/faceimage/").toString();
     public static final String path = "/epsit/mapimg/";
     public static final String taskPath="/epsit/task/";
     public static final String logPath="/epsit/log/";

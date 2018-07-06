@@ -36,7 +36,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.e(TAG, "获取的cacheDir是空");
         }
 
-        findViewById(R.id.gonext).setOnClickListener(this);
+        findViewById(R.id.gologin).setOnClickListener(this);
+        findViewById(R.id.gocamera).setOnClickListener(this);
+        findViewById(R.id.gofacecheck).setOnClickListener(this);
+        findViewById(R.id.gofacemanager).setOnClickListener(this);
     }
 
 
@@ -94,15 +97,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
                             || (checkSelfPermission(Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED)) {
                 Toast.makeText(this,"缺少权限！",Toast.LENGTH_SHORT).show();
-
+                return;
             }else{ //有权限
                 ///startActivity(new Intent(this, VideoViewDemo.class));
-                startActivity(new Intent(this, CameraActivity.class));
+                //startActivity(new Intent(this, CameraActivity.class));
             }
         }else{
-            startActivity(new Intent(this, CameraActivity.class));
+            //startActivity(new Intent(this, CameraActivity.class));
             //startActivity(new Intent(this, VideoViewDemo.class));
         }
+        switch (v.getId()){
+            case R.id.gologin:
+                startActivity(new Intent(this, LoginActivity.class));
+                break;
+            case R.id.gocamera:
+                startActivity(new Intent(this, CameraActivity.class));
+                break;
+            case R.id.gofacecheck:
+                startActivity(new Intent(this, FaceTrackerActivity.class));
+                break;
+            case R.id.gofacemanager:
+                startActivity(new Intent(this, FaceManagerActivity.class));
+                break;
+        }
+
 
     }
 

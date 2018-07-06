@@ -10,7 +10,8 @@ public interface ILoginModel {
         void onFail();
     }
     interface getCountListener{
-        void getCount(int count);
+        //返回数据总数，需要下载的数量
+        void getCount(int totalCount, int needDonwnload);
     }
     interface OnProgressListener{
 

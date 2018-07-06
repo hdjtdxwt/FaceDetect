@@ -3,6 +3,8 @@ package com.epsit.ihealth.robot.service;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
@@ -16,7 +18,10 @@ import com.aspsine.multithreaddownload.DownloadException;
 import com.aspsine.multithreaddownload.DownloadManager;
 import com.aspsine.multithreaddownload.DownloadRequest;
 import com.aspsine.multithreaddownload.util.L;
+import com.epsit.facelibrary.FaceDetectHelper;
 import com.epsit.ihealth.robot.R;
+import com.epsit.ihealth.robot.base.RobotApplication;
+import com.epsit.ihealth.robot.dbentity.FaceImgDataBean;
 import com.epsit.ihealth.robot.ebentity.EbDownloadFileInfo;
 import com.epsit.ihealth.robot.entity.DownFileInfo;
 import com.epsit.ihealth.robot.util.FileUtils;
@@ -30,6 +35,7 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -53,7 +59,13 @@ public class DownloadService extends Service {
     public static final String ACTION_DOWNLOAD = "com.exam.downloadservice";
 
     //核心线程3个，最大7个线程数  空闲的线程如果超过60s没执行，将被回收
-    private static ThreadPoolExecutor sExecutorService = new ThreadPoolExecutor(3, 7, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(128));
+    private static ThreadPoolExecutor sExecutorService;
+    static{
+        sExecutorService = new ThreadPoolExecutor(3, 7, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(128));
+        sExecutorService.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());//拒绝并抛出异常
+        //sExecutorService.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+    }
+    //ThreadPoolExecutor pool = new ThreadPoolExecutor(3, 7, 30, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(CAPACITY));
     Handler mHandler = new Handler(){ //主线程
         @Override
         public void handleMessage(Message msg) { //成功还是失败，发送到主界面的线程显示进度
@@ -85,6 +97,7 @@ public class DownloadService extends Service {
         private String mDownloadUrl;
         private String mLocalName;
         private String mFileSize;
+        FaceImgDataBean dataBean;
         /**
          * -2等待-1失败,0执行前, 1执行中 ,2成功
          */
@@ -95,14 +108,13 @@ public class DownloadService extends Service {
         private long mDownloadedSpeed;
         private int mProgress;
 
-        public DownloadTask( String saveName, String downloadUrl, long size) {
-            if(TextUtils.isEmpty(saveName)){
-                this.mLocalName = FileUtils.getFileName(downloadUrl);
-            }else{
-                this.mLocalName = saveName;
+        public DownloadTask(FaceImgDataBean bean ) {
+            dataBean = bean;
+            mDownloadUrl = bean.getFaceImg();
+            if(TextUtils.isEmpty(mLocalName)){
+                this.mLocalName = FileUtils.getFileName(mDownloadUrl);
             }
-            this.mDownloadUrl = downloadUrl;
-            this.mFileSize = FileUtils.getFormatSize(size);
+            this.mFileSize = FileUtils.getFormatSize(0);
         }
 
         protected void onPreExecute(String flag) {
@@ -139,25 +151,24 @@ public class DownloadService extends Service {
         private boolean downloadFile( ) {
             InputStream inputStream = null;
             RandomAccessFile raf = null;
+            File file =null;//保存的文件
             try {
                 // 检查文件夹是否存在，如果不存在就创建
                 File dir = new File(mLocalSavePath);
+                Log.e(TAG,"mLocalSavePath="+mLocalSavePath);
                 if (!dir.exists()) {
                     dir.mkdirs();
+                    Log.e(TAG,"mLocalSavePath=创建父路径");
                 }
-
-                File file = new File(mLocalSavePath, mLocalName);
-                if (file.exists()) {
-                    file.delete();
-                }
+                file = new File(mLocalSavePath, mLocalName);
+                Log.e(TAG,file.toString()+"----保存路径");
+                file.createNewFile();
+                Log.e(TAG,"file。exist=? "+file.exists());
                 raf = new RandomAccessFile(file, "rw");
 
                 URL url = new URL(mDownloadUrl);
                 HttpURLConnection urlConnection = (HttpURLConnection) url .openConnection();
                 urlConnection.setRequestMethod("GET");
-                // urlConnection
-                // .setRequestProperty("RANGE", "bytes=" + downloadedSize);
-                urlConnection.setDoOutput(true);
                 urlConnection.connect();
                 inputStream = urlConnection.getInputStream();
                 mTotalSize = urlConnection.getContentLength();
@@ -208,6 +219,24 @@ public class DownloadService extends Service {
                     e.printStackTrace();
                 }
             }
+
+            if(file!=null){
+                FaceDetectHelper.initFaceTracker(RobotApplication.getInstance().getApplicationContext());
+                Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+                int faceId = FaceDetectHelper.identify(bitmap,bitmap.getWidth(),bitmap.getHeight());
+                if(faceId == -1) {
+                    Log.e(TAG,"faceId = -1 图片没有检测到人脸");
+                }else if(faceId==-111){ //不认识这个人
+                    Log.e(TAG,"faceId = -111 不认识这个人");
+                    int resultAddFace = FaceDetectHelper.addFace(bitmap,bitmap.getWidth(),bitmap.getHeight());
+                    Log.e(TAG,"添加人脸返回的结果："+resultAddFace);
+                    dataBean.setFaceId(resultAddFace);
+                    RobotApplication.getInstance().getDaoSession().getFaceImgDataBeanDao().insert(dataBean);
+                }else if(faceId>0){
+                    Log.e(TAG,"已经有这个人了");
+                }
+            }
+
             return true;
         }
 
@@ -239,31 +268,13 @@ public class DownloadService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.v("DownloadService", "onStartCommand.intent=" + intent+"  thread="+Thread.currentThread().getName());
         if (intent != null) {
-            String saveName = intent.getStringExtra("saveName");
-            String downloadUrl = intent.getStringExtra("downloadUrl");
-            if(TextUtils.isEmpty(saveName) && !TextUtils.isEmpty(downloadUrl)){
-                saveName = FileUtils.getFileName(downloadUrl);
-            }
-            long fileSize = intent.getLongExtra("fileSize", 0);
-            boolean stop = intent.getBooleanExtra("stop", false);
-            if (!TextUtils.isEmpty(downloadUrl)) {
+            FaceImgDataBean bean = intent.getParcelableExtra("bean");
+            if(bean!=null && !TextUtils.isEmpty(bean.getFaceImg())){
                 //这里要考虑超过线程池的问题
-                DownloadTask task = new DownloadTask(saveName, downloadUrl, fileSize);
+                DownloadTask task = new DownloadTask(bean);
                 execute(task);
-                /*if (sExecutorService.getActiveCount() == 3) {
-                    // 超出最大线程池数，提示稍后下载
-                    Intent intent2 = new Intent(ACTION_DOWNLOAD);
-                    intent2.putExtra("state", "");
-                    intent2.putExtra("speed", "");
-                    intent2.putExtra("progress", 0);
-                    // -2等待-1失败,0执行前, 1执行中 ,2成功
-                    intent2.putExtra("flag", -2);
-                    mHandler.sendMessage(mHandler.obtainMessage(0, intent2));
-                } else {
-                    DownloadTask task = new DownloadTask(saveName, downloadUrl, fileSize);
-                    execute(task);
-                }*/
             }
+
         }
         return super.onStartCommand(intent, flags, startId);
     }

@@ -1,12 +1,10 @@
 package com.epsit.ihealth.robot.dbentity;
 
-import org.litepal.crud.DataSupport;
-
 /**
- * Created by Administrator on 2018/7/5.
+ * Created by Administrator on 2018/7/6/006.
  */
 
-public class MapImgData extends DataSupport {
+public class MapImgData {
     private String mapId; //图片id
     private String url;  // 下载地址
     private String version;  //版本
@@ -43,5 +41,4 @@ public class MapImgData extends DataSupport {
     public void setVersion(String version) {
         this.version = version;
     }
-
 }

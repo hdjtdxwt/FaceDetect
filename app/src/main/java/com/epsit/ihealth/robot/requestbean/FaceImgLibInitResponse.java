@@ -2,7 +2,6 @@ package com.epsit.ihealth.robot.requestbean;
 
 import com.epsit.ihealth.robot.dbentity.FaceImgDataBean;
 
-import org.litepal.crud.DataSupport;
 
 import java.util.List;
 

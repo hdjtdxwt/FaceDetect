@@ -26,8 +26,8 @@ public interface ApiService {
     @POST("api/robot/token")
     Observable<LoginResponse> login(@Body LoginRequest requestBody);
 
-    //@POST("api/customize/faceInfoByCustomize")
-    @POST("api/face/getFaceInfo")
+    @POST("api/customize/faceInfoByCustomize")
+    //@POST("api/face/getFaceInfo")
     Observable<FaceImgLibInitResponse> faceInfoByCustomize(@Body BaseRequest request);
 
 

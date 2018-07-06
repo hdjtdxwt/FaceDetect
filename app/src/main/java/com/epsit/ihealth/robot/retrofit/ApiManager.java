@@ -2,6 +2,8 @@ package com.epsit.ihealth.robot.retrofit;
 
 import android.content.Context;
 
+import java.util.concurrent.TimeUnit;
+
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
@@ -34,6 +36,10 @@ public class ApiManager {
         //不需要使用拦截器就不创建直接从if开始
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(new NetWorkInterceptor())
+                .retryOnConnectionFailure(false) //超时不自动重复请求
+                .connectTimeout(15, TimeUnit.SECONDS) //网络连接超时时间
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(15, TimeUnit.SECONDS)
                 //添加网络拦截器
                 .build();
         if (mApiService == null) {
