@@ -46,7 +46,7 @@ public class CameraActivity extends AppCompatActivity implements FaceDetectCallb
             lastHasFaceTime = System.currentTimeMillis();
         }else {
             if (faceCount > 0) {
-                Log.e(TAG, "---Activity显示获取的人脸数：count>0 有人脸");
+                //Log.e(TAG, "---Activity显示获取的人脸数：count>0 有人脸");
                 lastHasFaceTime = System.currentTimeMillis();
             } else {
                 //没有人脸更新时间，如果连续30s没有人脸，就进入空闲状态，跳转界面，播放视频和音频
@@ -57,7 +57,7 @@ public class CameraActivity extends AppCompatActivity implements FaceDetectCallb
                     //startActivity(new Intent(this, EmptyActivity.class));
                     startActivity(new Intent(this, VideoViewDemo.class));
                 }
-                Log.e(TAG, "---Activity显示获取的人脸数：count《=0 wu人脸");
+                //Log.e(TAG, "---Activity显示获取的人脸数：count《=0 wu人脸");
             }
         }
     }

@@ -11,6 +11,7 @@ import android.view.View;
 
 import com.epsit.facelibrary.FaceDetectHelper;
 import com.epsit.ihealth.robot.R;
+import com.epsit.ihealth.robot.base.RegisterImageCameraActivity;
 
 import java.io.File;
 
@@ -58,7 +59,8 @@ public class FaceManagerActivity extends AppCompatActivity implements View.OnCli
                 compare();
                 break;
             case R.id.addFromCamera:
-                startActivity(new Intent(this, AddFaceFromCameraActivity.class));
+                //startActivity(new Intent(this, AddFaceFromCameraActivity.class));
+                startActivity(new Intent(this, RegisterImageCameraActivity.class));
                 break;
 
         }

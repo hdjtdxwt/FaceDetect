@@ -78,4 +78,26 @@
     <string name="camera_error">This device doesn\'t support Camera2 API.</string>
     <string name="_settings">设置及说明</string>
     <string name="points_switch">切换</string>
+
+    <string name="dalog_notice">提示</string>
+    <string name="dialog_msg">已识别您为 %1$s ，是否更新您的人脸库？</string>
+    <string name="ignore">忽略</string>
+    <string name="update">更新</string>
+    <string name="i_not_him">我不是他</string>
+    <string name="please_face_to">请正脸面对</string>
+    <string name="please_left_20">请侧脸20°</string>
+    <string name="please_up_20">请抬头20°</string>
+    <string name="please_down_20">请低头20°</string>
+    <string name="delete_toast">确认清除所有人脸数据库？</string>
+    <string name="_sure">确定</string>
+    <string name="_not_sure">取消</string>
+    <string name="_sure_out">确定退出</string>
+    <string name="_keep_pre">继续完善</string>
+    <string name="dialog_msg1">你当前共添加 %1$s 张人脸数据，尚未注册完整，确定退出？</string>
+    <string name="dialog_msg2">人脸录入成功，Face ID =  %1$s 请输入昵称 </string>
+    <string name="insert_nickname">请输入昵称，不能为空哦</string>
+    <string name="_dialog_isnext">当前录入完成，是否录入下一个？</string>
+    <string name="_yes">是</string>
+    <string name="_no">否</string>
+
 </resources>

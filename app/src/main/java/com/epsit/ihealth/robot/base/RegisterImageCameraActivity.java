@@ -19,7 +19,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.epsit.ihealt.robot.greendao.gen.FaceImgDataBeanDao;
 import com.epsit.ihealth.robot.R;
+import com.epsit.ihealth.robot.dbentity.FaceImgDataBean;
 import com.epsit.ihealth.robot.util.DrawUtil;
 import com.epsit.ihealth.robot.util.TrackUtil;
 
@@ -56,6 +58,7 @@ public class RegisterImageCameraActivity extends BaseCameraActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.e(TAG,"RegisterImageCameraActivity---onCreate");
         setContentView(R.layout.unlock_insert_activity);
         setCamera_max_width(-1);
         netFaceTrack.setRetrofit("http://121.42.141.249:8011/");
@@ -176,43 +179,48 @@ public class RegisterImageCameraActivity extends BaseCameraActivity {
                         if (personId == -111) {
                             addFace1(bytes, rect);
                         } else { //之前通过其他方式添加过人脸
-                            /*User user = DrawUtil.getUserById(personId + "");
+                            FaceImgDataBeanDao faceDao = RobotApplication.getInstance().getDaoSession().getFaceImgDataBeanDao();
+                            FaceImgDataBean bean = faceDao.queryBuilder().where(FaceImgDataBeanDao.Properties.FaceId.eq(personId)).unique();
                             String name = personId + "";
-                            if (user != null) name = user.getName();
+                            if (bean != null) {
+                                Log.e(TAG,"人脸对象bean为空");
+                                name = bean.getName();
+                            }
 
                             final AlertDialog.Builder builder = new AlertDialog.Builder(RegisterImageCameraActivity.this);
                             builder.setTitle(R.string.dalog_notice).setCancelable(false);
                             builder.setMessage(String.format(getString(R.string.dialog_msg), name))
-                                    .setPositiveButton("忽略", new DialogInterface.OnClickListener() {
+                                    .setPositiveButton(R.string.ignore, new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int i) {
                                             personId = -111;
                                             addCount = 0;
                                         }
                                     })
-                                    .setNegativeButton("更新", new DialogInterface.OnClickListener() {
+                                    .setNegativeButton(R.string.update, new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int i) {
                                             faceTrack.deletePerson(personId);
-                                            DataSource dataSource = new DataSource(getAppContext());
-                                            String imgPath = getAppContext().getCacheDir()
-                                                    + "/" + personId + ".jpg";
+                                            FaceImgDataBeanDao faceDao = RobotApplication.getInstance().getDaoSession().getFaceImgDataBeanDao();
+                                            FaceImgDataBean bean = faceDao.queryBuilder().where(FaceImgDataBeanDao.Properties.FaceId.eq(personId)).unique();
+                                            if(faceDao!=null && bean!=null){
+                                                faceDao.delete(bean);
+                                            }
+                                            String imgPath = RobotApplication.getInstance().getCacheDir() + "/" + personId + ".jpg";
                                             File imgFile = new File(imgPath);
                                             if (imgFile.exists()) {
                                                 imgFile.delete();
                                             }
-                                            dataSource.deleteById(personId + "");
-                                            faceTrack.deletePerson(personId);
                                             addFace1(bytes, rect);
                                         }
                                     })
-                                    .setNeutralButton("这个不是我呀", new DialogInterface.OnClickListener() {
+                                    .setNeutralButton(R.string.i_not_him, new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int i) {
                                             addFace1(bytes, rect);
                                         }
                                     });
-                            builder.create().show();*/
+                            builder.create().show();
                         }
                     }
                 } else {
@@ -358,8 +366,8 @@ public class RegisterImageCameraActivity extends BaseCameraActivity {
             stopCamera();
             finish();
         } else {
-            /*final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(R.string.dalog_notice).setMessage(String.format(getString(R.string.dialog_msg1), addCount))
+            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.dalog_notice).setMessage(String.format("你当前共添加 %1$s 张人脸数据，尚未注册完整，确定退出？", addCount))
                     .setNegativeButton(R.string._sure_out, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
@@ -368,7 +376,7 @@ public class RegisterImageCameraActivity extends BaseCameraActivity {
                             finish();
                         }
                     }).setPositiveButton(R.string._keep_pre, null);
-            builder.create().show();*/
+            builder.create().show();
         }
        // DrawUtil.updateDataSource();
     }
@@ -468,14 +476,14 @@ public class RegisterImageCameraActivity extends BaseCameraActivity {
 
     void doEnd() {
 
-        /*final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setCancelable(false);
         final EditText et = new EditText(mContext);
         et.setGravity(Gravity.CENTER);
         et.setHint(R.string.insert_nickname);
         et.setHintTextColor(0xffc6c6c6);
         builder.setTitle(R.string.dalog_notice)
-                .setMessage(String.format(getString(R.string.dialog_msg2), personId))
+                .setMessage(String.format("人脸录入成功，Face ID =  %1$s 请输入昵称" , personId))
                 .setView(et)
                 .setPositiveButton(R.string._sure, new DialogInterface.OnClickListener() {
                     @Override
@@ -487,16 +495,16 @@ public class RegisterImageCameraActivity extends BaseCameraActivity {
                             doEnd();
                             return;
                         }
-//                        if (saveImage) {
-//                            //修改文件夹名
-//                            File tmpFile = new File("/sdcard/img/fr/" + personId);
-//                            tmpFile.renameTo(new File("/sdcard/img/fr/" + name));
-//                        }
-
-                        *//*User user = new User("" + personId, name, age, gender);
+                        FaceImgDataBean bean = new FaceImgDataBean();
+                        bean.setFaceId(personId);
+                        bean.setFaceImg(mContext.getCacheDir() + "/" + personId + ".jpg");
+                        bean.setName(name);
+                        FaceImgDataBeanDao faceDao = RobotApplication.getInstance().getDaoSession().getFaceImgDataBeanDao();
+                        faceDao.insert(bean);
+                        /*User user = new User("" + personId, name, age, gender);
                         user.setScore(score);
                         DataSource dataSource = new DataSource(mContext);
-                        dataSource.insert(user);
+                        dataSource.insert(user);*/
                         BitmapUtil.saveBitmap(head, mContext.getCacheDir() + "/" + personId + ".jpg");
 
                         final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
@@ -506,11 +514,6 @@ public class RegisterImageCameraActivity extends BaseCameraActivity {
                                         new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialogInterface, int i) {
-//                                                addCount = 0;
-//                                                personId = -111;
-//                                                show_image.setBackgroundResource(R.drawable.nomal_1);
-//                                                next.setVisibility(View.GONE);
-
 
                                                 setResult(101, getIntent());
                                                 onBackPressed();
@@ -524,11 +527,11 @@ public class RegisterImageCameraActivity extends BaseCameraActivity {
                                         onBackPressed();
                                     }
                                 });
-                        builder.create().show();*//*
+                        builder.create().show();
 
                     }
                 });
-        builder.create().show();*/
+        builder.create().show();
     }
 
 

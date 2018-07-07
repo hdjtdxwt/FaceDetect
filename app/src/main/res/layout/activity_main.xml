@@ -9,7 +9,7 @@
         android:id="@+id/gocamera"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="去摄像头界面"
+        android:text="去摄像头测试界面"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

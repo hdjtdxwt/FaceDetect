@@ -49,6 +49,7 @@
         <activity android:name=".activity.FaceTrackerActivity" />
         <activity android:name=".activity.FaceManagerActivity" />
         <activity android:name=".activity.AddFaceFromCameraActivity"></activity>
+        <activity android:name=".base.RegisterImageCameraActivity"></activity>
     </application>
 
 </manifest>

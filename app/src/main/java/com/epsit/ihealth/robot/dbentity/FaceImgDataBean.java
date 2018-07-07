@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.Generated;
+import org.greenrobot.greendao.annotation.Property;
 
 /**
  * Created by Administrator on 2018/7/5.
@@ -22,6 +23,10 @@ public class FaceImgDataBean implements Parcelable{
      * faceImg : http://192.168.1.9:8080/img/userfiles/1/images/photo/2017/12/user1.jpg
      * idImg :
      */
+    @Property(nameInDb = "id")
+    @Id
+    protected Long _id;
+    @Property(nameInDb = "img_uuid")
     protected String id;
     protected String code;
     protected String name;
@@ -30,10 +35,12 @@ public class FaceImgDataBean implements Parcelable{
     protected String faceImg;
     protected String idImg;
     //这个属性后台没有返回，是自己保存的，先获取到图片后，放进阅面的人脸，阅面返回的人脸id，然后保存进来的
-    protected int faceId ;
+    protected int faceId;
 
-    @Generated(hash = 2015943533)
-    public FaceImgDataBean(String id, String code, String name, String idNo, String type, String faceImg, String idImg, int faceId) {
+    @Generated(hash = 224334283)
+    public FaceImgDataBean(Long _id, String id, String code, String name, String idNo, String type, String faceImg, String idImg,
+            int faceId) {
+        this._id = _id;
         this.id = id;
         this.code = code;
         this.name = name;
@@ -149,7 +156,15 @@ public class FaceImgDataBean implements Parcelable{
         dest.writeString(type);
         dest.writeString(faceImg);
         dest.writeString(idImg);
-        dest.writeInt(faceId);
+        dest.writeLong(faceId);
+    }
+
+    public Long get_id() {
+        return this._id;
+    }
+
+    public void set_id(Long _id) {
+        this._id = _id;
     }
 
 }

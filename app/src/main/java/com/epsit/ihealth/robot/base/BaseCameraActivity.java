@@ -3,19 +3,21 @@ package com.epsit.ihealth.robot.base;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
+import android.util.Log;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
 
 import com.epsit.facelibrary.constant.SenseConfig;
 import com.epsit.ihealth.robot.R;
+import com.epsit.ihealth.robot.util.CameraHelper;
+import com.epsit.ihealth.robot.util.CameraParams;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import dou.helper.CameraHelper;
-import dou.helper.CameraParams;
 import dou.utils.DLog;
 import dou.utils.DeviceUtil;
+import dou.utils.DisplayUtil;
 import dou.utils.ToastUtil;
 import mobile.ReadFace.YMFace;
 import mobile.ReadFace.YMFaceTrack;
@@ -24,6 +26,7 @@ import mobile.ReadFace.YMFaceTrack;
  * Created by mac on 16/7/13.
  */
 public abstract class BaseCameraActivity extends FaceBaseActivity implements CameraHelper.PreviewFrameListener {
+    String TAG ="BaseCameraActivity";
     private SurfaceView camera_view;
     private SurfaceView draw_view;
     protected CameraHelper mCameraHelper;
@@ -31,7 +34,7 @@ public abstract class BaseCameraActivity extends FaceBaseActivity implements Cam
 
     protected int iw = 0, ih;
     private float scale_bit;
-    private boolean showFps = false;
+    private boolean showFps = true;
     private List<Float> timeList = new ArrayList<>();
     protected boolean stop = false;
     //camera_max_width值为-1时, 找大于640分辨率为屏幕宽高等比
@@ -40,6 +43,8 @@ public abstract class BaseCameraActivity extends FaceBaseActivity implements Cam
     private final Object lock = new Object();
 
     public void initCamera() {
+        this.sw = DisplayUtil.getScreenWidthPixels(this);
+        this.sh = DisplayUtil.getScreenHeightPixels(this);
         camera_view = (SurfaceView) findViewById(R.id.camera_preview);
         draw_view = (SurfaceView) findViewById(R.id.pointView);
         draw_view.setZOrderOnTop(true);
@@ -62,6 +67,7 @@ public abstract class BaseCameraActivity extends FaceBaseActivity implements Cam
         }
 
         params.previewFrameListener = this;
+        Log.e(TAG,"----"+TAG+"  initCamera");
         mCameraHelper = new CameraHelper(this, params);
     }
 
@@ -107,7 +113,7 @@ public abstract class BaseCameraActivity extends FaceBaseActivity implements Cam
         faceTrack.setDistanceType(YMFaceTrack.DISTANCE_TYPE_NEAR);
 
         //license激活版本初始化
-        int result = faceTrack.initTrack(this, YMFaceTrack.FACE_0, YMFaceTrack.RESIZE_WIDTH_640,
+        int result = faceTrack.initTrack(this, YMFaceTrack.FACE_270, YMFaceTrack.RESIZE_WIDTH_640,
                 SenseConfig.appid, SenseConfig.appsecret);
 
 //        普通有效期版本初始化
@@ -159,21 +165,6 @@ public abstract class BaseCameraActivity extends FaceBaseActivity implements Cam
             camera_count = 0;
             camera_long = 0;
         }
-//        DLog.d("camera_fps  = " + camera_fps);
-//        if (camera_count == 20 && !save) {
-//            save = true;
-//            final int iw = mCameraHelper.getPreviewSize().width;
-//            final int ih = mCameraHelper.getPreviewSize().height;
-//            final byte[] yuvData = new byte[bytes.length];
-//            System.arraycopy(bytes, 0, yuvData, 0, bytes.length);
-//            new Thread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    CameraUtil.saveFromPreview(yuvData, "/sdcard/test.jpg",
-//                            mCameraHelper.getPreviewSize().width, mCameraHelper.getPreviewSize().height);
-//                }
-//            }).start();
-//        }
         initCameraMsg();
         if (!stop) {
             synchronized (lock) {
@@ -199,7 +190,7 @@ public abstract class BaseCameraActivity extends FaceBaseActivity implements Cam
 
             int orientation = 0;
             ////注意横屏竖屏问题
-            DLog.d(getResources().getConfiguration().orientation + " : " + Configuration.ORIENTATION_PORTRAIT);
+            Log.d(TAG, getResources().getConfiguration().orientation + " : " + Configuration.ORIENTATION_PORTRAIT);
             if (sw < sh) {
                 scale_bit = surface_w / (float) ih;
                 if (mCameraHelper.getCameraId() == Camera.CameraInfo.CAMERA_FACING_FRONT) {
@@ -219,7 +210,7 @@ public abstract class BaseCameraActivity extends FaceBaseActivity implements Cam
                 iw = 0;
                 return;
             }
-
+            Log.e(TAG,"orientation---->"+orientation);
             faceTrack.setOrientation(orientation);
             ViewGroup.LayoutParams params = draw_view.getLayoutParams();
             params.width = surface_w;
