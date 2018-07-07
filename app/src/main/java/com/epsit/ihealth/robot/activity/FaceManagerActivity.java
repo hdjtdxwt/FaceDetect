@@ -6,12 +6,17 @@ import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
 import com.epsit.facelibrary.FaceDetectHelper;
+import com.epsit.ihealt.robot.greendao.gen.FaceImgDataBeanDao;
 import com.epsit.ihealth.robot.R;
 import com.epsit.ihealth.robot.base.RegisterImageCameraActivity;
+import com.epsit.ihealth.robot.base.RobotApplication;
+import com.epsit.ihealth.robot.dbentity.FaceImgDataBean;
+import com.epsit.ihealth.robot.util.FileUtils;
 
 import java.io.File;
 
@@ -22,6 +27,8 @@ public class FaceManagerActivity extends AppCompatActivity implements View.OnCli
     String TAG = "FaceManagerActivity";
     String selfPath = Environment.getExternalStorageDirectory()+"/self77.jpg";
     String dir = Environment.getExternalStorageDirectory()+"/faceimg";
+    FaceImgDataBeanDao faceDao;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,6 +39,8 @@ public class FaceManagerActivity extends AppCompatActivity implements View.OnCli
         findViewById(R.id.deleteAll).setOnClickListener(this);
         findViewById(R.id.compare).setOnClickListener(this);
         findViewById(R.id.addFromCamera).setOnClickListener(this);
+
+        faceDao = RobotApplication.getInstance().getDaoSession().getFaceImgDataBeanDao();
         Log.e(TAG,"人脸库中的人脸数量："+FaceDetectHelper.getAllCount());
     }
 
@@ -78,15 +87,28 @@ public class FaceManagerActivity extends AppCompatActivity implements View.OnCli
     public void initSingle(String selfPath){
         if(new File(selfPath).exists()){
             Bitmap bitmap = BitmapFactory.decodeFile(selfPath);
-            int faceId = FaceDetectHelper.addFace(bitmap,bitmap.getWidth(),bitmap.getHeight());
-            Log.e(TAG,selfPath+ " 初始化结果 faceId="+faceId+"  初始化人脸结果："+(faceId>0 ? "成功":"失败"));
-
-            /*if(FaceDetectHelper.isFaceAdded(bitmap,bitmap.getWidth(),bitmap.getHeight())){
-                Log.e(TAG,selfPath+"  图片对应人脸添加添加过了");
-            }else{
+            if(!FaceDetectHelper.isFaceAdded(bitmap,bitmap.getWidth(),bitmap.getHeight())){ //没有添加
+                FaceImgDataBean bean = new FaceImgDataBean();
+                bean.setFaceImg(selfPath);
+                String fileName = FileUtils.getPrefixName(FileUtils.getFileName(selfPath));
+                if(!TextUtils.isEmpty(fileName)){
+                    bean.setName(fileName);
+                }else if(!TextUtils.isEmpty(FileUtils.getFileName(selfPath))){
+                    bean.setName(FileUtils.getFileName(selfPath));
+                }else{
+                    bean.setName("");
+                }
                 int faceId = FaceDetectHelper.addFace(bitmap,bitmap.getWidth(),bitmap.getHeight());
+                FaceImgDataBean dbBean = faceDao.queryBuilder().where(FaceImgDataBeanDao.Properties.FaceId.eq(faceId)).unique();
+                if(dbBean==null){
+                    bean.setFaceId(faceId);
+                    faceDao.insert(bean);
+                }else{
+                    Log.e(TAG,"数据库有这个人的id了，不写入，忽略当前人的");
+                }
+
                 Log.e(TAG,selfPath+ " 初始化结果 faceId="+faceId+"  初始化人脸结果："+(faceId>0 ? "成功":"失败"));
-            }*/
+            }
             bitmap.recycle();
         }else{
             Log.e(TAG,"人脸图片不存在");

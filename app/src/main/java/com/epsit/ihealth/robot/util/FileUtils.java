@@ -210,6 +210,18 @@ public class FileUtils {
         return (filePosi == -1) ? filePath : filePath.substring(filePosi + 1);
     }
 
+    public static String getPrefixName(String fileName){
+        if(fileName==null){
+            return null;
+        }
+        int index = fileName.lastIndexOf('.');
+        System.out.println("index="+index);
+        if(index>0){
+            return fileName.substring(0,index);
+        }
+        return fileName;
+    }
+
     /**
      * 获取url 图片的后缀
      * @param url
