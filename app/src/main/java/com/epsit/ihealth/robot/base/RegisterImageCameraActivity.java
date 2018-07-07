@@ -180,7 +180,7 @@ public class RegisterImageCameraActivity extends BaseCameraActivity {
                             addFace1(bytes, rect);
                         } else { //之前通过其他方式添加过人脸
                             FaceImgDataBeanDao faceDao = RobotApplication.getInstance().getDaoSession().getFaceImgDataBeanDao();
-                            FaceImgDataBean bean = faceDao.queryBuilder().where(FaceImgDataBeanDao.Properties.FaceId.eq(personId)).unique();
+                            FaceImgDataBean bean = faceDao.queryBuilder().where(FaceImgDataBeanDao.Properties.FaceId.eq(new Long(personId))).unique();
                             String name = personId + "";
                             if (bean != null) {
                                 Log.e(TAG,"人脸对象bean为空");

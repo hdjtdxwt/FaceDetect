@@ -23,8 +23,8 @@ public class FaceImgDataBean implements Parcelable{
      * faceImg : http://192.168.1.9:8080/img/userfiles/1/images/photo/2017/12/user1.jpg
      * idImg :
      */
-    @Property(nameInDb = "id")
-    @Id
+    @Property(nameInDb = "id" )
+    @Id(autoincrement = true)
     protected Long _id;
     @Property(nameInDb = "img_uuid")
     protected String id;
