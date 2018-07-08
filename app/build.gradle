@@ -19,6 +19,11 @@ android {
             abiFilters 'armeabi', 'armeabi-v7a'//, 'x86', 'armeabi-v7a', 'x86_64', 'arm64-v8a'
         }
     }
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['src/main/jniLibs']
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false

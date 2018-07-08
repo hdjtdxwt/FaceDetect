@@ -13,9 +13,9 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintHorizontal_bias="0.057"
+        app:layout_constraintHorizontal_bias="0.064"
         android:layout_marginTop="8dp"
-        app:layout_constraintVertical_bias="0.219"
+        app:layout_constraintVertical_bias="0.164"
         app:layout_constraintTop_toTopOf="@+id/gologin" />
     <Button
         android:id="@+id/gologin"
@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:text="去登录界面"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="110dp"
+        android:layout_marginTop="88dp"
         android:layout_marginLeft="16dp"
         app:layout_constraintLeft_toLeftOf="parent" />
     <Button
@@ -36,6 +36,24 @@
         android:layout_marginLeft="16dp"
         app:layout_constraintLeft_toLeftOf="parent" />
     <Button
+        android:id="@+id/gofacecheck2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="去阅面人脸检测"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="241dp"
+        android:layout_marginLeft="16dp"
+        app:layout_constraintLeft_toLeftOf="parent" />
+    <Button
+        android:id="@+id/gofacecheck3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="阅面人脸验证"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="318dp"
+        android:layout_marginLeft="16dp"
+        app:layout_constraintLeft_toLeftOf="parent" />
+    <Button
         android:id="@+id/gofacemanager"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -43,5 +61,5 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginLeft="16dp"
-        android:layout_marginTop="347dp" />
+        android:layout_marginTop="399dp" />
 </android.support.constraint.ConstraintLayout>

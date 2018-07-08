@@ -39,6 +39,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.gologin).setOnClickListener(this);
         findViewById(R.id.gocamera).setOnClickListener(this);
         findViewById(R.id.gofacecheck).setOnClickListener(this);
+        findViewById(R.id.gofacecheck2).setOnClickListener(this);
+        findViewById(R.id.gofacecheck3).setOnClickListener(this);
         findViewById(R.id.gofacemanager).setOnClickListener(this);
     }
 
@@ -114,7 +116,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(new Intent(this, CameraActivity.class));
                 break;
             case R.id.gofacecheck:
+                //startActivity(new Intent(this, FaceRecoActivity.class));
+                //startActivity(new Intent(this, FaceRecognitionActivity.class));
                 startActivity(new Intent(this, FaceTrackerActivity.class));
+                break;
+            case R.id.gofacecheck2:
+                startActivity(new Intent(this, FaceRecoActivity.class));
+                //startActivity(new Intent(this, FaceRecognitionActivity.class));
+                //startActivity(new Intent(this, FaceTrackerActivity.class));
+                break;
+            case R.id.gofacecheck3:
+                //startActivity(new Intent(this, FaceRecoActivity.class));
+                startActivity(new Intent(this, FaceRecognitionActivity.class));
+                //startActivity(new Intent(this, FaceTrackerActivity.class));
                 break;
             case R.id.gofacemanager:
                 startActivity(new Intent(this, FaceManagerActivity.class));

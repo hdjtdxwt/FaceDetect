@@ -29,11 +29,6 @@ public abstract class FaceBaseActivity extends Activity {
         mContext = this;
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-//        if (BaseApplication.screenOri == Configuration.ORIENTATION_LANDSCAPE)
-//            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-//        else
-//            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
 
         sw = DisplayUtil.getScreenWidthPixels(this);
         sh = DisplayUtil.getScreenHeightPixels(this);

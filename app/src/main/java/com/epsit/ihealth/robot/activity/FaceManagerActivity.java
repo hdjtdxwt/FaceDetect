@@ -13,7 +13,6 @@ import android.view.View;
 import com.epsit.facelibrary.FaceDetectHelper;
 import com.epsit.ihealt.robot.greendao.gen.FaceImgDataBeanDao;
 import com.epsit.ihealth.robot.R;
-import com.epsit.ihealth.robot.base.RegisterImageCameraActivity;
 import com.epsit.ihealth.robot.base.RobotApplication;
 import com.epsit.ihealth.robot.dbentity.FaceImgDataBean;
 import com.epsit.ihealth.robot.util.FileUtils;

@@ -7,7 +7,6 @@ import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
-import android.graphics.SurfaceTexture;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.support.v7.app.AppCompatActivity;
@@ -21,12 +20,9 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.epsit.facelibrary.CameraAction;
 import com.epsit.facelibrary.FaceDetectHelper;
-import com.epsit.facelibrary.callback.FaceDetectCallback;
 import com.epsit.facelibrary.constant.SenseConfig;
 import com.epsit.ihealth.robot.R;
-import com.epsit.ihealth.robot.base.BaseCameraActivity;
 import com.epsit.ihealth.robot.base.RobotApplication;
 import com.epsit.ihealth.robot.util.TrackUtil;
 
@@ -35,7 +31,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-import dou.helper.CameraHelper;
 import dou.utils.BitmapUtil;
 import dou.utils.DLog;
 import dou.utils.ToastUtil;

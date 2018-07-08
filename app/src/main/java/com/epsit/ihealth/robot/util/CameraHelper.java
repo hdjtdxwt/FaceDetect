@@ -122,8 +122,8 @@ public class CameraHelper implements PreviewCallback {
             }
 
             try {
-                Parameters var3 = this.camera.getParameters();
                 this.setCameraDisplayOrientation((Activity)this.context, this.getCameraId(), this.camera);
+                Parameters var3 = this.camera.getParameters();
                 this.setOptimalPreviewSize(var3, this.camera_max_width);
                 this.camera.setParameters(var3);
                 this.startPreview();

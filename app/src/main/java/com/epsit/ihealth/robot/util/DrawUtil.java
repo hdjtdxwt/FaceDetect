@@ -9,7 +9,9 @@ import android.hardware.Camera;
 import android.view.SurfaceView;
 import android.view.View;
 
+import com.epsit.ihealt.robot.greendao.gen.FaceImgDataBeanDao;
 import com.epsit.ihealth.robot.base.RobotApplication;
+import com.epsit.ihealth.robot.dbentity.FaceImgDataBean;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -169,6 +171,25 @@ public class DrawUtil {
                     int personId = ymFace.getPersonId();
                     StringBuilder sb = new StringBuilder();
 //                    sb.append("trackId : " + ymFace.getTrackId() + " ");
+
+                    if (personId > 0){
+                        FaceImgDataBeanDao faceDao = RobotApplication.getInstance().getDaoSession().getFaceImgDataBeanDao();
+                        FaceImgDataBean bean = faceDao.queryBuilder().where(FaceImgDataBeanDao.Properties.FaceId.eq(personId)).unique();
+                        String name="";
+                        if(bean!=null){
+                            name = bean.getName();
+                        }
+                        if (isChinese(name)) {
+                            if (name.length() > 4) {
+                                name = name.substring(0, 4) + "…";
+                            }
+                        } else {
+                            if (name.length() > 10) {
+                                name = name.substring(0, 10) + "…";
+                            }
+                        }
+                        sb.append(name).append("  ");
+                    }
 
                     /*if (personId > 0 && userMap.containsKey(personId)) {
 
